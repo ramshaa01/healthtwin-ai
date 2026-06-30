@@ -1,4 +1,4 @@
-# Swasthya Sahay Mitr
+# HealthTwin AI
 ### Personalized Predictive Health System using Digital Twin
 
 An offline, explainable, multi-disease health risk prediction system
