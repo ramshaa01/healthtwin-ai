@@ -1,4 +1,4 @@
-# Swasthya Sahay Mitr — ML Phase Summary
+# HealthTwin AI — ML Phase Summary
 ### Week 2 Complete (Days 8-13)
 
 ## Final Model Results

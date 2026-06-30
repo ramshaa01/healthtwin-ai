@@ -1,4 +1,4 @@
-# Swasthya Sahay Mitr — Project Scope Doc
+# HealthTwin AI - Project Scope Doc
 ### Day 1 Deliverable
 
 ## Goal
