@@ -144,6 +144,8 @@ def run_prediction(condition: str, bmi: float, raw_input: dict) -> dict:
     shap_vals = explainer.shap_values(X_input)
     if isinstance(shap_vals, list):
         shap_vals = shap_vals[1]
+    elif len(np.array(shap_vals).shape) == 3:
+        shap_vals = np.array(shap_vals)[:, :, 1]
     shap_row = shap_vals[0] if len(np.array(shap_vals).shape) > 1 else shap_vals
 
     shap_series = pd.Series(shap_row, index=features)
