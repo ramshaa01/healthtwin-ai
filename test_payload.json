@@ -1,0 +1,17 @@
+{
+  "age": 35,
+  "sex": 1,
+  "height_cm": 175,
+  "weight_kg": 80,
+  "systolic_bp": 125,
+  "cholesterol": 200,
+  "physical_activity": 3,
+  "sleep_hours": 7,
+  "dietary_quality": 6,
+  "stress_level": 5,
+  "smoking": 0,
+  "alcohol": 0,
+  "high_cholesterol": 0,
+  "family_history_diabetes": 0,
+  "family_history_heart": 0
+}
