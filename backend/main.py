@@ -27,6 +27,8 @@ app.add_middleware(
 )
 
 app.include_router(predict.router)
+from backend.routers import simulate
+app.include_router(simulate.router)
 
 @app.get("/")
 def root():
