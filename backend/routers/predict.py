@@ -1,7 +1,10 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from backend.schemas import HealthInput, PredictResponse
 from backend.models_loader import LOADED_MODELS, run_prediction
 from backend.digital_twin import twin_engine
+from backend.auth import get_current_user
+from backend.database import predictions_collection
+from datetime import datetime
 
 router = APIRouter(prefix="/api", tags=["Prediction"])
 
@@ -24,12 +27,12 @@ def compute_health_score(predictions: list, bmi: float,
     return min(100.0, max(0.0, total))
 
 @router.post("/predict", response_model=PredictResponse)
-def predict(input_data: HealthInput):
+def predict(input_data: HealthInput,
+            current_user: dict = Depends(get_current_user)):
     height_m = input_data.height_cm / 100
     bmi = round(input_data.weight_kg / (height_m ** 2), 2)
     raw = input_data.model_dump()
 
-    # Store in Digital Twin for subsequent /simulate calls
     twin_engine.set_base(raw)
 
     predictions = []
@@ -43,8 +46,30 @@ def predict(input_data: HealthInput):
         input_data.stress_level
     )
 
+    # Save to MongoDB
+    predictions_collection.insert_one({
+        "username":     current_user["username"],
+        "timestamp":    datetime.utcnow(),
+        "input":        raw,
+        "bmi":          bmi,
+        "predictions":  predictions,
+        "health_score": health_score
+    })
+
     return PredictResponse(
         bmi=bmi,
         predictions=predictions,
         health_score=health_score
     )
+
+@router.get("/history")
+def get_history(current_user: dict = Depends(get_current_user)):
+    """Return last 10 predictions for the logged-in user."""
+    records = list(
+        predictions_collection
+        .find({"username": current_user["username"]},
+              {"_id": 0})
+        .sort("timestamp", -1)
+        .limit(10)
+    )
+    return {"history": records}

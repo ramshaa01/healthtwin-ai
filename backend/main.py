@@ -29,6 +29,8 @@ app.add_middleware(
 app.include_router(predict.router)
 from backend.routers import simulate
 app.include_router(simulate.router)
+from backend.routers import auth
+app.include_router(auth.router)
 
 @app.get("/")
 def root():
