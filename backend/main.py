@@ -31,6 +31,8 @@ from backend.routers import simulate
 app.include_router(simulate.router)
 from backend.routers import auth
 app.include_router(auth.router)
+from backend.routers import forecast
+app.include_router(forecast.router)
 
 @app.get("/")
 def root():
