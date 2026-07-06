@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
-from backend.auth import hash_password, verify_password, create_access_token
+from backend.auth import hash_password, verify_password, create_access_token, get_current_user
 from backend.database import users_collection
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -49,3 +49,10 @@ def login(request: LoginRequest):
         username=user["username"],
         full_name=user.get("full_name", "")
     )
+
+@router.get("/profile")
+def get_profile(current_user: dict = Depends(get_current_user)):
+    return {
+        "username":  current_user["username"],
+        "full_name": current_user.get("full_name", "")
+    }

@@ -11,20 +11,57 @@ router = APIRouter(prefix="/api", tags=["Prediction"])
 CONDITIONS = ['diabetes', 'hypertension', 'heart', 'obesity', 'stress']
 
 def compute_health_score(predictions: list, bmi: float,
-                          sleep_hours: float, stress_level: float) -> float:
+                          sleep_hours: float, stress_level: float,
+                          physical_activity: float,
+                          dietary_quality: float) -> dict:
     risks = {p['condition']: p['risk_probability'] for p in predictions}
-    bmi_score = 25 if 18.5 <= bmi <= 24.9 else max(0, 25 - abs(bmi - 22) * 1.5)
-    physical = bmi_score * 0.5 + (1 - risks.get('diabetes', 0.5)) * 12.5
-    mental = (1 - risks.get('stress', 0.5)) * 15 + max(0, (10 - stress_level) / 10 * 10)
-    nutrition = (1 - risks.get('obesity', 0.5)) * 25
-    if 7 <= sleep_hours <= 9:
-        sleep = 25
-    elif 6 <= sleep_hours <= 10:
-        sleep = 18
+
+    # Physical (0-25): BMI + diabetes/heart risk + activity
+    if 18.5 <= bmi <= 24.9:
+        bmi_score = 25
+    elif 17 <= bmi <= 29.9:
+        bmi_score = 15
     else:
-        sleep = max(0, 10 - abs(sleep_hours - 8) * 2)
-    total = round(physical + mental + nutrition + sleep, 1)
-    return min(100.0, max(0.0, total))
+        bmi_score = 8
+    activity_score = min(physical_activity / 7 * 10, 10)
+    disease_score = (1 - risks.get('diabetes', 0.5)) * 5 + \
+                    (1 - risks.get('heart', 0.5)) * 5
+    physical = round(bmi_score * 0.5 + activity_score * 0.3 +
+                     disease_score * 0.2, 2)
+
+    # Mental (0-25): stress self-report + stress model risk
+    stress_self = max(0, (10 - stress_level) / 10 * 15)
+    stress_model = (1 - risks.get('stress', 0.5)) * 10
+    mental = round(stress_self + stress_model, 2)
+
+    # Nutrition (0-25): dietary quality + obesity risk
+    diet_score = dietary_quality / 10 * 15
+    obesity_score = (1 - risks.get('obesity', 0.5)) * 10
+    nutrition = round(diet_score + obesity_score, 2)
+
+    # Sleep (0-25): hours + hypertension risk (hypertension disrupts sleep)
+    if 7 <= sleep_hours <= 9:
+        sleep_score = 25
+    elif 6 <= sleep_hours <= 10:
+        sleep_score = 18
+    elif 5 <= sleep_hours <= 11:
+        sleep_score = 12
+    else:
+        sleep_score = 5
+    sleep = round(sleep_score * 0.7 +
+                  (1 - risks.get('hypertension', 0.5)) * 7.5, 2)
+
+    total = round(min(100.0, physical + mental + nutrition + sleep), 1)
+
+    return {
+        'total': total,
+        'breakdown': {
+            'physical':  round(min(25.0, physical), 1),
+            'mental':    round(min(25.0, mental), 1),
+            'nutrition': round(min(25.0, nutrition), 1),
+            'sleep':     round(min(25.0, sleep), 1)
+        }
+    }
 
 @router.post("/predict", response_model=PredictResponse)
 def predict(input_data: HealthInput,
@@ -43,7 +80,9 @@ def predict(input_data: HealthInput,
     health_score = compute_health_score(
         predictions, bmi,
         input_data.sleep_hours,
-        input_data.stress_level
+        input_data.stress_level,
+        input_data.physical_activity,
+        input_data.dietary_quality
     )
 
     # Save to MongoDB

@@ -36,8 +36,13 @@ app.include_router(forecast.router)
 
 @app.get("/")
 def root():
+    return {"message": "Welcome to HealthTwin AI API"}
+
+@app.get("/api/health-check")
+def health_check():
+    from backend.models_loader import LOADED_MODELS
     return {
-        "message": "HealthTwin AI API is running",
-        "models_loaded": 5,
-        "docs": "/docs"
+        "status": "ok",
+        "models_loaded": list(LOADED_MODELS.keys()),
+        "version": "1.0.0"
     }
