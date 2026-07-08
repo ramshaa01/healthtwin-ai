@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import Navbar from "../components/Navbar"
 import HealthScoreGauge from "../components/HealthScoreGauge"
 import RiskCard from "../components/RiskCard"
@@ -48,17 +49,41 @@ const MOCK_SCORE = {
 }
 
 export default function DashboardPage() {
-  const [predictions] = useState(MOCK_PREDICTIONS)
-  const [healthScore] = useState(MOCK_SCORE)
+  const navigate = useNavigate()
+
+  // Try to load real result from assessment, fall back to mock data
+  const stored = sessionStorage.getItem("healthtwin_result")
+  const result = stored ? JSON.parse(stored) : null
+
+  const [predictions] = useState(result?.predictions || MOCK_PREDICTIONS)
+  const [healthScore] = useState(result?.health_score || MOCK_SCORE)
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
       <Navbar />
       <div style={{ maxWidth: "1100px", margin: "0 auto",
                     padding: "2rem 1rem" }}>
-        <h2 style={{ color: "#1e40af", marginBottom: "1.5rem" }}>
+        <h2 style={{ color: "#1e40af", marginBottom: "1rem" }}>
           Your Health Dashboard
         </h2>
+
+        {/* Assessment CTA Button */}
+        <button
+          onClick={() => navigate("/assessment")}
+          style={{ marginBottom: "1.5rem", padding: "0.85rem 2rem",
+                   background: "#1e40af", color: "white",
+                   border: "none", borderRadius: "10px",
+                   fontSize: "1rem", fontWeight: "bold",
+                   cursor: "pointer" }}>
+          🩺 Start Health Assessment
+        </button>
+
+        {!result && (
+          <p style={{ color: "#6b7280", fontSize: "0.85rem",
+                      marginBottom: "1.5rem" }}>
+            📋 Showing mock data — click the button above to run your real assessment
+          </p>
+        )}
 
         {/* Health Score */}
         <div style={{ marginBottom: "2rem" }}>
@@ -79,11 +104,13 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <p style={{ color: "#9ca3af", fontSize: "0.85rem",
-                    textAlign: "center" }}>
-          📋 Mock data shown — complete the health assessment form
-          to see your real predictions (coming Day 25)
-        </p>
+        {!result && (
+          <p style={{ color: "#9ca3af", fontSize: "0.85rem",
+                      textAlign: "center" }}>
+            📋 Mock data shown — complete the health assessment form
+            to see your real predictions
+          </p>
+        )}
       </div>
     </div>
   )
