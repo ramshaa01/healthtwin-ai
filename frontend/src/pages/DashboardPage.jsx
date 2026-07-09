@@ -1,115 +1,252 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Cell
+} from "recharts"
 import Navbar from "../components/Navbar"
 import HealthScoreGauge from "../components/HealthScoreGauge"
 import RiskCard from "../components/RiskCard"
+import { healthAPI } from "../api/client"
 
-const MOCK_PREDICTIONS = [
-  { condition: "diabetes",     risk_probability: 0.36,
-    risk_level: "Low",
-    top_shap_features: [
-      { feature: "GenHlth",    shap_value: 0.38 },
-      { feature: "Age",        shap_value: 0.26 },
-      { feature: "BMI",        shap_value: 0.21 }
-    ]},
-  { condition: "hypertension", risk_probability: 0.75,
-    risk_level: "High",
-    top_shap_features: [
-      { feature: "Age",        shap_value: 0.65 },
-      { feature: "HighChol",   shap_value: 0.38 },
-      { feature: "BMI",        shap_value: 0.32 }
-    ]},
-  { condition: "heart",        risk_probability: 0.40,
-    risk_level: "Moderate",
-    top_shap_features: [
-      { feature: "age",        shap_value: -0.12 },
-      { feature: "sex",        shap_value:  0.10 },
-      { feature: "chol",       shap_value: -0.06 }
-    ]},
-  { condition: "obesity",      risk_probability: 0.85,
-    risk_level: "High",
-    top_shap_features: [
-      { feature: "family_history", shap_value: 1.21 },
-      { feature: "Age",            shap_value: 1.10 },
-      { feature: "CAEC",           shap_value: 0.69 }
-    ]},
-  { condition: "stress",       risk_probability: 0.92,
-    risk_level: "High",
-    top_shap_features: [
-      { feature: "Quality of Sleep", shap_value:  0.37 },
-      { feature: "Gender",           shap_value:  0.16 },
-      { feature: "systolic_bp",      shap_value: -0.04 }
-    ]}
-]
+const CONDITIONS_LABEL = {
+  diabetes: "Type 2 Diabetes", hypertension: "Hypertension",
+  heart: "Heart Disease",      obesity: "Obesity",
+  stress: "Stress"
+}
 
-const MOCK_SCORE = {
-  total: 44.1,
-  breakdown: { physical: 10.0, mental: 7.5,
-               nutrition: 9.0, sleep: 17.5 }
+function ShapChart({ condition, features }) {
+  if (!features || features.length === 0) return null
+  const data = [...features]
+    .sort((a, b) => Math.abs(b.shap_value) - Math.abs(a.shap_value))
+    .slice(0, 6)
+    .map(f => ({
+      feature: f.feature.length > 14
+        ? f.feature.slice(0, 13) + "…"
+        : f.feature,
+      value: parseFloat(f.shap_value.toFixed(4)),
+      abs: Math.abs(f.shap_value)
+    }))
+
+  return (
+    <div style={{ background: "white", borderRadius: "12px",
+                  padding: "1.25rem",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  marginBottom: "1rem" }}>
+      <h4 style={{ color: "#374151", marginBottom: "0.75rem",
+                   fontSize: "0.95rem" }}>
+        {CONDITIONS_LABEL[condition]} — Feature Impact (SHAP)
+      </h4>
+      <p style={{ fontSize: "0.75rem", color: "#9ca3af",
+                  marginBottom: "0.75rem" }}>
+        🔴 Red = increases risk &nbsp;|&nbsp; 🟢 Green = reduces risk
+      </p>
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={data} layout="vertical"
+                  margin={{ left: 10, right: 30, top: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+          <XAxis type="number" tick={{ fontSize: 11 }} />
+          <YAxis type="category" dataKey="feature"
+                 tick={{ fontSize: 11 }} width={110} />
+          <Tooltip
+            formatter={(v) => [v.toFixed(4), "SHAP value"]}
+          />
+          <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+            {data.map((entry, i) => (
+              <Cell key={i}
+                fill={entry.value > 0 ? "#ef4444" : "#22c55e"} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )
 }
 
 export default function DashboardPage() {
+  const [predictions, setPredictions] = useState([])
+  const [healthScore, setHealthScore] = useState(null)
+  const [recommendations, setRecommendations] = useState([])
+  const [activeTab, setActiveTab] = useState("overview")
+  const [loadingRecs, setLoadingRecs] = useState(false)
   const navigate = useNavigate()
 
-  // Try to load real result from assessment, fall back to mock data
-  const stored = sessionStorage.getItem("healthtwin_result")
-  const result = stored ? JSON.parse(stored) : null
+  useEffect(() => {
+    const stored = sessionStorage.getItem("healthtwin_result")
+    if (stored) {
+      const data = JSON.parse(stored)
+      setPredictions(data.predictions || [])
+      setHealthScore(data.health_score || null)
+    }
+  }, [])
 
-  const [predictions] = useState(result?.predictions || MOCK_PREDICTIONS)
-  const [healthScore] = useState(result?.health_score || MOCK_SCORE)
+  const fetchRecommendations = async () => {
+    setLoadingRecs(true)
+    try {
+      const res = await healthAPI.recommendations()
+      setRecommendations(res.data.recommendations || [])
+      setActiveTab("recommendations")
+    } catch (e) {
+      console.error("Recommendations failed:", e)
+    } finally {
+      setLoadingRecs(false)
+    }
+  }
+
+  const hasResults = predictions.length > 0
+
+  const tabStyle = (tab) => ({
+    padding: "0.6rem 1.25rem",
+    borderRadius: "8px",
+    border: "none",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "0.9rem",
+    background: activeTab === tab ? "#1e40af" : "#e5e7eb",
+    color: activeTab === tab ? "white" : "#374151"
+  })
+
+  const tierColors = { 1: "#fef2f2", 2: "#fffbeb", 3: "#f0fdf4" }
+  const tierBorder = { 1: "#fca5a5", 2: "#fcd34d", 3: "#86efac" }
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
       <Navbar />
       <div style={{ maxWidth: "1100px", margin: "0 auto",
                     padding: "2rem 1rem" }}>
-        <h2 style={{ color: "#1e40af", marginBottom: "1rem" }}>
-          Your Health Dashboard
-        </h2>
 
-        {/* Assessment CTA Button */}
-        <button
-          onClick={() => navigate("/assessment")}
-          style={{ marginBottom: "1.5rem", padding: "0.85rem 2rem",
-                   background: "#1e40af", color: "white",
-                   border: "none", borderRadius: "10px",
-                   fontSize: "1rem", fontWeight: "bold",
-                   cursor: "pointer" }}>
-          🩺 Start Health Assessment
-        </button>
-
-        {!result && (
-          <p style={{ color: "#6b7280", fontSize: "0.85rem",
-                      marginBottom: "1.5rem" }}>
-            📋 Showing mock data — click the button above to run your real assessment
-          </p>
-        )}
-
-        {/* Health Score */}
-        <div style={{ marginBottom: "2rem" }}>
-          <HealthScoreGauge
-            score={healthScore}
-            breakdown={healthScore.breakdown}
-          />
+        {/* Header row */}
+        <div style={{ display: "flex", justifyContent: "space-between",
+                      alignItems: "center", marginBottom: "1.5rem",
+                      flexWrap: "wrap", gap: "1rem" }}>
+          <h2 style={{ color: "#1e40af" }}>Your Health Dashboard</h2>
+          <button
+            onClick={() => navigate("/assessment")}
+            style={{ padding: "0.75rem 1.5rem", background: "#1e40af",
+                     color: "white", border: "none", borderRadius: "10px",
+                     fontWeight: "bold", cursor: "pointer",
+                     fontSize: "0.95rem" }}>
+            🩺 {hasResults ? "Retake Assessment" : "Start Assessment"}
+          </button>
         </div>
 
-        {/* Risk Cards */}
-        <h3 style={{ marginBottom: "1rem", color: "#374151" }}>
-          Disease Risk Assessment
-        </h3>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap",
-                      marginBottom: "2rem" }}>
-          {predictions.map(p => (
-            <RiskCard key={p.condition} {...p} />
-          ))}
-        </div>
+        {!hasResults ? (
+          <div style={{ textAlign: "center", padding: "4rem 2rem",
+                        background: "white", borderRadius: "16px",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+            <p style={{ fontSize: "3rem", marginBottom: "1rem" }}>🏥</p>
+            <h3 style={{ color: "#374151", marginBottom: "0.75rem" }}>
+              No health data yet
+            </h3>
+            <p style={{ color: "#6b7280", marginBottom: "1.5rem" }}>
+              Complete your health assessment to see personalised
+              risk predictions and recommendations.
+            </p>
+            <button
+              onClick={() => navigate("/assessment")}
+              style={{ padding: "0.85rem 2rem", background: "#1e40af",
+                       color: "white", border: "none",
+                       borderRadius: "10px", fontWeight: "bold",
+                       cursor: "pointer", fontSize: "1rem" }}>
+              Start Your Assessment →
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Health Score */}
+            <div style={{ marginBottom: "2rem" }}>
+              <HealthScoreGauge
+                score={healthScore}
+                breakdown={healthScore?.breakdown}
+              />
+            </div>
 
-        {!result && (
-          <p style={{ color: "#9ca3af", fontSize: "0.85rem",
-                      textAlign: "center" }}>
-            📋 Mock data shown — complete the health assessment form
-            to see your real predictions
-          </p>
+            {/* Tab navigation */}
+            <div style={{ display: "flex", gap: "0.5rem",
+                          marginBottom: "1.5rem", flexWrap: "wrap" }}>
+              {["overview", "explainability", "recommendations"].map(tab => (
+                <button key={tab} style={tabStyle(tab)}
+                  onClick={() => {
+                    if (tab === "recommendations") fetchRecommendations()
+                    else setActiveTab(tab)
+                  }}>
+                  {tab === "overview"        ? "📊 Risk Overview" :
+                   tab === "explainability"  ? "🔍 Explainability" :
+                   "💡 Recommendations"}
+                </button>
+              ))}
+            </div>
+
+            {/* Overview tab */}
+            {activeTab === "overview" && (
+              <div style={{ display: "flex", gap: "1rem",
+                            flexWrap: "wrap" }}>
+                {predictions.map(p => (
+                  <RiskCard key={p.condition} {...p} />
+                ))}
+              </div>
+            )}
+
+            {/* Explainability tab */}
+            {activeTab === "explainability" && (
+              <div>
+                <p style={{ color: "#6b7280", marginBottom: "1rem",
+                            fontSize: "0.9rem" }}>
+                  These charts show which factors are driving each
+                  risk prediction. Red bars push risk up,
+                  green bars pull it down.
+                </p>
+                {predictions.map(p => (
+                  <ShapChart key={p.condition}
+                    condition={p.condition}
+                    features={p.top_shap_features} />
+                ))}
+              </div>
+            )}
+
+            {/* Recommendations tab */}
+            {activeTab === "recommendations" && (
+              <div>
+                {loadingRecs ? (
+                  <p style={{ color: "#6b7280" }}>
+                    Generating recommendations...
+                  </p>
+                ) : recommendations.length === 0 ? (
+                  <p style={{ color: "#6b7280" }}>
+                    No recommendations loaded yet.
+                  </p>
+                ) : (
+                  recommendations.map((rec, i) => (
+                    <div key={i} style={{
+                      background: tierColors[rec.tier] || "#f9fafb",
+                      border: `1px solid ${tierBorder[rec.tier] || "#e5e7eb"}`,
+                      borderRadius: "12px", padding: "1.25rem",
+                      marginBottom: "0.75rem"
+                    }}>
+                      <div style={{ display: "flex", gap: "0.75rem",
+                                    alignItems: "flex-start" }}>
+                        <span style={{ fontSize: "1.25rem" }}>
+                          {rec.tier === 1 ? "⚠️" :
+                           rec.tier === 2 ? "📋" : "✅"}
+                        </span>
+                        <div>
+                          <p style={{ fontWeight: "600", fontSize: "0.85rem",
+                                      color: "#6b7280",
+                                      marginBottom: "0.25rem" }}>
+                            {rec.priority} — {rec.condition.toUpperCase()}
+                          </p>
+                          <p style={{ color: "#111827",
+                                      lineHeight: "1.5" }}>
+                            {rec.recommendation}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
