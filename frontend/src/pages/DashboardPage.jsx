@@ -120,14 +120,24 @@ export default function DashboardPage() {
                       alignItems: "center", marginBottom: "1.5rem",
                       flexWrap: "wrap", gap: "1rem" }}>
           <h2 style={{ color: "#1e40af" }}>Your Health Dashboard</h2>
-          <button
-            onClick={() => navigate("/assessment")}
-            style={{ padding: "0.75rem 1.5rem", background: "#1e40af",
-                     color: "white", border: "none", borderRadius: "10px",
-                     fontWeight: "bold", cursor: "pointer",
-                     fontSize: "0.95rem" }}>
-            🩺 {hasResults ? "Retake Assessment" : "Start Assessment"}
-          </button>
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <button
+              onClick={() => navigate("/assessment")}
+              style={{ padding: "0.75rem 1.5rem", background: "#1e40af",
+                       color: "white", border: "none", borderRadius: "10px",
+                       fontWeight: "bold", cursor: "pointer",
+                       fontSize: "0.95rem" }}>
+              🩺 {hasResults ? "Retake Assessment" : "Start Assessment"}
+            </button>
+            <button
+              onClick={() => navigate("/simulate")}
+              style={{ padding: "0.75rem 1.5rem", background: "#7c3aed",
+                       color: "white", border: "none", borderRadius: "10px",
+                       fontWeight: "bold", cursor: "pointer",
+                       fontSize: "0.95rem" }}>
+              🔮 What-If Simulation
+            </button>
+          </div>
         </div>
 
         {!hasResults ? (

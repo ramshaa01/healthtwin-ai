@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage"
 import SignupPage from "./pages/SignupPage"
 import DashboardPage from "./pages/DashboardPage"
 import AssessmentPage from "./pages/AssessmentPage"
+import SimulatePage from "./pages/SimulatePage"
 
 export default function App() {
   return (
@@ -21,6 +22,11 @@ export default function App() {
           <Route path="/assessment" element={
             <ProtectedRoute>
               <AssessmentPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/simulate" element={
+            <ProtectedRoute>
+              <SimulatePage />
             </ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/login" replace />} />
