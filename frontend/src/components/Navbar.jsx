@@ -25,7 +25,22 @@ export default function Navbar() {
       <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
         {user && (
           <>
-            <span style={{ fontSize: "0.9rem" }}>
+            <Link to="/dashboard"
+              style={{ color: "white", textDecoration: "none",
+                       fontSize: "0.85rem" }}>
+              Dashboard
+            </Link>
+            <Link to="/simulate"
+              style={{ color: "white", textDecoration: "none",
+                       fontSize: "0.85rem" }}>
+              Simulate
+            </Link>
+            <Link to="/forecast"
+              style={{ color: "white", textDecoration: "none",
+                       fontSize: "0.85rem" }}>
+              Forecast
+            </Link>
+            <span style={{ fontSize: "0.9rem", marginLeft: "1rem" }}>
               Welcome, {user.full_name || user.username}
             </span>
             <button onClick={handleLogout} style={{
