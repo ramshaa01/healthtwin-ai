@@ -93,6 +93,26 @@ export default function DashboardPage() {
     }
   }
 
+  const downloadReport = async () => {
+    try {
+      const token = sessionStorage.getItem("healthtwin_token")
+      const res = await fetch(
+        "http://localhost:8000/api/export-pdf",
+        { headers: { Authorization: "Bearer " + token } }
+      )
+      if (!res.ok) throw new Error("Export failed")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "healthtwin_report.pdf"
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      alert("PDF export failed. Please run an assessment first.")
+    }
+  }
+
   const hasResults = predictions.length > 0
 
   const tabStyle = (tab) => ({
@@ -137,6 +157,16 @@ export default function DashboardPage() {
                        fontSize: "0.95rem" }}>
               🔮 What-If Simulation
             </button>
+            {hasResults && (
+              <button onClick={downloadReport}
+                style={{ padding: "0.75rem 1.5rem",
+                         background: "#059669", color: "white",
+                         border: "none", borderRadius: "10px",
+                         fontWeight: "bold", cursor: "pointer",
+                         fontSize: "0.95rem" }}>
+                📄 Export PDF
+              </button>
+            )}
           </div>
         </div>
 

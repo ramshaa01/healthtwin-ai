@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from backend.schemas import HealthInput, PredictResponse
+from backend.pdf_report import generate_pdf_report
 from backend.models_loader import LOADED_MODELS, run_prediction
 from backend.digital_twin import twin_engine
 from backend.auth import get_current_user
@@ -112,3 +114,26 @@ def get_history(current_user: dict = Depends(get_current_user)):
         .limit(10)
     )
     return {"history": records}
+
+@router.get("/export-pdf")
+def export_pdf(current_user: dict = Depends(get_current_user)):
+    records = list(
+        predictions_collection
+        .find({"username": current_user["username"]}, {"_id": 0})
+        .sort("timestamp", -1)
+        .limit(1)
+    )
+    if not records:
+        raise HTTPException(status_code=404,
+            detail="No predictions found. Run assessment first.")
+    latest = records[0]
+    pdf_bytes = generate_pdf_report(
+        username=current_user["username"],
+        health_data=latest
+    )
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition":
+            f"attachment; filename=healthtwin_report_{current_user['username']}.pdf"}
+    )

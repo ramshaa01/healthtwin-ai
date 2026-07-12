@@ -7,6 +7,7 @@ import DashboardPage from "./pages/DashboardPage"
 import AssessmentPage from "./pages/AssessmentPage"
 import SimulatePage from "./pages/SimulatePage"
 import ForecastPage from "./pages/ForecastPage"
+import HistoryPage from "./pages/HistoryPage"
 
 export default function App() {
   return (
@@ -33,6 +34,11 @@ export default function App() {
           <Route path="/forecast" element={
             <ProtectedRoute>
               <ForecastPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/history" element={
+            <ProtectedRoute>
+              <HistoryPage />
             </ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/login" replace />} />

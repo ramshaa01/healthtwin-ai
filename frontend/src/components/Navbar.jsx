@@ -40,6 +40,11 @@ export default function Navbar() {
                        fontSize: "0.85rem" }}>
               Forecast
             </Link>
+            <Link to="/history"
+              style={{ color: "white", textDecoration: "none",
+                       fontSize: "0.85rem" }}>
+              History
+            </Link>
             <span style={{ fontSize: "0.9rem", marginLeft: "1rem" }}>
               Welcome, {user.full_name || user.username}
             </span>
