@@ -3,26 +3,26 @@
 
 An offline, explainable, multi-disease health risk prediction system
 built as a B.Tech final year project. Predicts risk for 5 conditions
-— Type 2 Diabetes, Heart Disease, Hypertension, Obesity, and Stress —
-from self-reported lifestyle inputs, with SHAP-based explanations and
-a Digital Twin simulation layer.
+from self-reported lifestyle inputs, with SHAP-based explanations,
+Digital Twin simulation, and Monte Carlo forecasting.
+
+## Features
+- Multi-disease prediction: Type 2 Diabetes, Heart Disease,
+  Hypertension, Obesity, Mental Health Stress
+- SHAP explainability: feature-level explanation for every prediction
+- Digital Twin What-If simulation: instant lifestyle scenario testing
+- Monte Carlo 12-month forecast: best/expected/worst trajectories
+- Personalised recommendations ranked by SHAP importance
+- PDF report export for healthcare provider sharing
+- Full offline operation: no internet required after setup
+- JWT authentication with bcrypt password hashing
 
 ## Tech Stack
 - ML: Python, scikit-learn, XGBoost, SHAP, imbalanced-learn
-- Backend: FastAPI, MongoDB, PyJWT, passlib
-- Frontend: React (Vite), recharts, axios
+- Backend: FastAPI, MongoDB, PyJWT, passlib, ReportLab
+- Frontend: React (Vite), recharts, react-router-dom, axios
 
-## Project Status
-- [x] Week 1: Data pipeline (sourcing, cleaning, preprocessing)
-- [x] Week 2: ML models + SHAP explainability (all 5 conditions)
-- [ ] Week 3: FastAPI backend + Digital Twin engine (Days 15-21)
-- [ ] Week 4: React frontend + integration (Days 22-28)
-- [ ] Days 29-30: Testing, report, demo prep
-
-## Running the project (Week 3+ only)
-Instructions will be added as the backend and frontend are built.
-
-## Model Results Summary
+## Model Results
 | Condition | Model | Test ROC-AUC |
 |---|---|---|
 | Diabetes | XGBoost | 0.7985 |
@@ -30,3 +30,16 @@ Instructions will be added as the backend and frontend are built.
 | Heart Disease | Random Forest | 0.7121 |
 | Obesity | Gradient Boosting | 0.9690 |
 | Stress | Decision Tree | 0.9954 |
+
+## Running Locally
+1. Clone the repository
+2. Install MongoDB Community Edition and start the service
+3. Create a Python venv and install dependencies:
+   pip install -r requirements.txt
+4. Start the backend:
+   uvicorn backend.main:app --reload --port 8000
+5. Start the frontend:
+   cd frontend && npm install && npm run dev
+6. Open http://localhost:5173
+
+## Project Status: COMPLETE
