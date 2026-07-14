@@ -97,7 +97,7 @@ export default function DashboardPage() {
     try {
       const token = sessionStorage.getItem("healthtwin_token")
       const res = await fetch(
-        "http://localhost:8000/api/export-pdf",
+        (import.meta.env.VITE_API_URL || "http://localhost:8000") + "/api/export-pdf",
         { headers: { Authorization: "Bearer " + token } }
       )
       if (!res.ok) throw new Error("Export failed")
