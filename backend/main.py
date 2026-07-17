@@ -20,7 +20,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Vercel frontend — updated after deploy
+    allow_origins=["https://healthtwin-ai-eight.vercel.app"],  # Vercel frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
