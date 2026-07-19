@@ -18,12 +18,7 @@ export default function SignupPage() {
       await signup(form.username, form.password, form.full_name)
       navigate("/dashboard")
     } catch (e) {
-      const msg = e.response?.data?.detail
-      if (!msg && (e.code === "ECONNABORTED" || e.message?.includes("timeout") || e.message?.includes("Network"))) {
-        setError("Server is waking up (free tier cold start) — please wait 30 seconds and try again.")
-      } else {
-        setError(msg || "Signup failed. Please try again.")
-      }
+      setError(e.response?.data?.detail || "Signup failed.")
     } finally {
       setLoading(false)
     }
@@ -37,23 +32,26 @@ export default function SignupPage() {
                     padding: "2.5rem", width: "100%", maxWidth: "400px",
                     boxShadow: "0 4px 16px rgba(0,0,0,0.1)" }}>
         <h1 style={{ textAlign: "center", color: "#1e40af",
-                     marginBottom: "0.5rem" }}>🏥 HealthTwin AI</h1>
+                     marginBottom: "0.5rem" }}>
+          🏥 HealthTwin AI
+        </h1>
         <p style={{ textAlign: "center", color: "#6b7280",
-                    marginBottom: "2rem" }}>Create your health profile</p>
-
+                    marginBottom: "2rem" }}>
+          Create your health profile
+        </p>
         {error && (
-          <div style={{ background: "#fef2f2", border: "1px solid #fca5a5",
+          <div style={{ background: "#fef2f2",
+                        border: "1px solid #fca5a5",
                         padding: "0.75rem", borderRadius: "8px",
                         color: "#dc2626", marginBottom: "1rem",
                         fontSize: "0.9rem" }}>
             {error}
           </div>
         )}
-
         {[
-          { key: "full_name", placeholder: "Full Name" },
-          { key: "username",  placeholder: "Username" },
-          { key: "password",  placeholder: "Password", type: "password" }
+          { key: "full_name",  placeholder: "Full Name" },
+          { key: "username",   placeholder: "Username" },
+          { key: "password",   placeholder: "Password", type: "password" }
         ].map(field => (
           <input
             key={field.key}
@@ -67,14 +65,14 @@ export default function SignupPage() {
                      boxSizing: "border-box" }}
           />
         ))}
-
         <button
           onClick={handleSubmit}
           disabled={loading}
           style={{ width: "100%", padding: "0.85rem",
                    background: loading ? "#93c5fd" : "#1e40af",
-                   color: "white", border: "none", borderRadius: "8px",
-                   fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}>
+                   color: "white", border: "none",
+                   borderRadius: "8px", fontSize: "1rem",
+                   fontWeight: "bold", cursor: "pointer" }}>
           {loading ? "Creating account..." : "Create Account"}
         </button>
         <p style={{ textAlign: "center", marginTop: "1rem",

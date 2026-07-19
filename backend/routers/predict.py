@@ -66,8 +66,8 @@ def compute_health_score(predictions: list, bmi: float,
     }
 
 @router.post("/predict", response_model=PredictResponse)
-def predict(input_data: HealthInput):
-    current_user = {"username": "demo_user"}
+def predict(input_data: HealthInput,
+            current_user: dict = Depends(get_current_user)):
     height_m = input_data.height_cm / 100
     bmi = round(input_data.weight_kg / (height_m ** 2), 2)
     raw = input_data.model_dump()
@@ -104,8 +104,7 @@ def predict(input_data: HealthInput):
     )
 
 @router.get("/history")
-def get_history():
-    current_user = {"username": "demo_user"}
+def get_history(current_user: dict = Depends(get_current_user)):
     """Return last 10 predictions for the logged-in user."""
     records = list(
         predictions_collection
@@ -117,8 +116,7 @@ def get_history():
     return {"history": records}
 
 @router.get("/export-pdf")
-def export_pdf():
-    current_user = {"username": "demo_user"}
+def export_pdf(current_user: dict = Depends(get_current_user)):
     records = list(
         predictions_collection
         .find({"username": current_user["username"]}, {"_id": 0})
