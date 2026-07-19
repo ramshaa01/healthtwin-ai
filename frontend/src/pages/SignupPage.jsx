@@ -18,7 +18,12 @@ export default function SignupPage() {
       await signup(form.username, form.password, form.full_name)
       navigate("/dashboard")
     } catch (e) {
-      setError(e.response?.data?.detail || "Signup failed")
+      const msg = e.response?.data?.detail
+      if (!msg && (e.code === "ECONNABORTED" || e.message?.includes("timeout") || e.message?.includes("Network"))) {
+        setError("Server is waking up (free tier cold start) — please wait 30 seconds and try again.")
+      } else {
+        setError(msg || "Signup failed. Please try again.")
+      }
     } finally {
       setLoading(false)
     }
