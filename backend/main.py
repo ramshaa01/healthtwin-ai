@@ -20,7 +20,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://healthtwin-ai-eight.vercel.app"],  # Vercel frontend
+    allow_origins=[
+        "https://healthtwin-ai-eight.vercel.app",
+        "https://healthtwin-ai-ramshaa01s-projects.vercel.app",
+        "https://healthtwin-nkouqu1j0-ramshaa01s-projects.vercel.app",
+    ],  # Vercel frontend URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
