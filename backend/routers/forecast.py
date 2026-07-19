@@ -7,7 +7,7 @@ from backend.auth import get_current_user
 router = APIRouter(prefix="/api", tags=["Forecast & Recommendations"])
 
 @router.post("/forecast")
-def forecast(current_user: dict = Depends(get_current_user)):
+def forecast():
     """Run Monte Carlo simulation on the stored base profile.
     Returns 10th/50th/90th percentile risk trajectories.
     Call /predict first to set the base profile."""
@@ -20,7 +20,7 @@ def forecast(current_user: dict = Depends(get_current_user)):
     return run_monte_carlo(base, n_simulations=100)
 
 @router.post("/recommendations")
-def recommendations(current_user: dict = Depends(get_current_user)):
+def recommendations():
     """Generate personalised recommendations based on the last
     /predict output stored in the Digital Twin."""
     base = twin_engine.get_base()
