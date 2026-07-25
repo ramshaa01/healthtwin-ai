@@ -10,78 +10,105 @@ export default function LoginPage() {
   const navigate = useNavigate()
 
   const handleSubmit = async () => {
+    if (!form.username || !form.password) {
+      setError("Please enter username and password")
+      return
+    }
     setError("")
     setLoading(true)
     try {
       await login(form.username, form.password)
       navigate("/dashboard")
     } catch (e) {
-      setError(e.response?.data?.detail || "Login failed. Check credentials.")
+      setError(e.response?.data?.detail || "Login failed. Check your credentials.")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc",
-                  display: "flex", alignItems: "center",
-                  justifyContent: "center" }}>
-      <div style={{ background: "white", borderRadius: "16px",
-                    padding: "2.5rem", width: "100%", maxWidth: "400px",
-                    boxShadow: "0 4px 16px rgba(0,0,0,0.1)" }}>
-        <h1 style={{ textAlign: "center", color: "#1e40af",
-                     marginBottom: "0.5rem" }}>
-          🏥 HealthTwin AI
-        </h1>
-        <p style={{ textAlign: "center", color: "#6b7280",
-                    marginBottom: "2rem" }}>
-          Sign in to your health profile
-        </p>
-        {error && (
-          <div style={{ background: "#fef2f2",
-                        border: "1px solid #fca5a5",
-                        padding: "0.75rem", borderRadius: "8px",
-                        color: "#dc2626", marginBottom: "1rem",
-                        fontSize: "0.9rem" }}>
-            {error}
+    <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-primary-600 flex items-center justify-center p-4">
+      <div className="w-full max-w-md animate-slide-up">
+        {/* Logo area */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-xl mb-4">
+            <span className="text-3xl">🏥</span>
           </div>
-        )}
-        <input
-          placeholder="Username"
-          value={form.username}
-          onChange={e => setForm({ ...form, username: e.target.value })}
-          style={{ width: "100%", padding: "0.75rem",
-                   marginBottom: "1rem", borderRadius: "8px",
-                   border: "1px solid #d1d5db", fontSize: "1rem",
-                   boxSizing: "border-box" }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={e => setForm({ ...form, password: e.target.value })}
-          onKeyDown={e => e.key === "Enter" && handleSubmit()}
-          style={{ width: "100%", padding: "0.75rem",
-                   marginBottom: "1.5rem", borderRadius: "8px",
-                   border: "1px solid #d1d5db", fontSize: "1rem",
-                   boxSizing: "border-box" }}
-        />
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{ width: "100%", padding: "0.85rem",
-                   background: loading ? "#93c5fd" : "#1e40af",
-                   color: "white", border: "none",
-                   borderRadius: "8px", fontSize: "1rem",
-                   fontWeight: "bold", cursor: "pointer" }}>
-          {loading ? "Signing in..." : "Sign In"}
-        </button>
-        <p style={{ textAlign: "center", marginTop: "1rem",
-                    color: "#6b7280", fontSize: "0.9rem" }}>
-          No account?{" "}
-          <Link to="/signup" style={{ color: "#1e40af" }}>
-            Sign up
-          </Link>
+          <h1 className="text-3xl font-bold text-white">HealthTwin AI</h1>
+          <p className="text-primary-200 mt-1 text-sm">
+            Your personalised health intelligence system
+          </p>
+        </div>
+
+        {/* Card */}
+        <div className="bg-white rounded-3xl shadow-2xl p-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">
+            Welcome back
+          </h2>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-5 flex items-start gap-2">
+              <span className="text-red-500 mt-0.5">⚠️</span>
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Username
+              </label>
+              <input
+                className="input-field"
+                placeholder="Enter your username"
+                value={form.username}
+                onChange={e => setForm({ ...form, username: e.target.value })}
+                onKeyDown={e => e.key === "Enter" && handleSubmit()}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Password
+              </label>
+              <input
+                type="password"
+                className="input-field"
+                placeholder="Enter your password"
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                onKeyDown={e => e.key === "Enter" && handleSubmit()}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="btn-primary w-full mt-6">
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10"
+                    stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Signing in...
+              </span>
+            ) : "Sign In"}
+          </button>
+
+          <p className="text-center mt-5 text-sm text-gray-500">
+            Don't have an account?{" "}
+            <Link to="/signup"
+              className="text-primary-700 font-semibold hover:underline">
+              Create account
+            </Link>
+          </p>
+        </div>
+
+        <p className="text-center text-primary-300 text-xs mt-6">
+          All data stays on your device. No cloud sharing.
         </p>
       </div>
     </div>

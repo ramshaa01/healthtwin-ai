@@ -1,68 +1,129 @@
-import { Link, useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+
+const NAV_LINKS = [
+  { path: "/dashboard",  label: "Dashboard",  icon: "📊" },
+  { path: "/assessment", label: "Assessment",  icon: "🩺" },
+  { path: "/simulate",   label: "Simulate",    icon: "🔮" },
+  { path: "/forecast",   label: "Forecast",    icon: "📈" },
+  { path: "/history",    label: "History",     icon: "📋" },
+]
 
 export default function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
     navigate("/login")
   }
 
+  const isActive = (path) => location.pathname === path
+
   return (
-    <nav style={{
-      background: "#1e40af", color: "white",
-      padding: "1rem 2rem", display: "flex",
-      justifyContent: "space-between", alignItems: "center"
-    }}>
-      <Link to="/dashboard" style={{
-        color: "white", textDecoration: "none",
-        fontWeight: "bold", fontSize: "1.25rem"
-      }}>
-        🏥 HealthTwin AI
-      </Link>
-      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-        {user ? (
-          <>
+    <>
+      {/* Desktop Navbar */}
+      <nav className="bg-primary-800 shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
             <Link to="/dashboard"
-              style={{ color: "white", textDecoration: "none",
-                       fontSize: "0.85rem" }}>
-              Dashboard
+              className="flex items-center gap-2 text-white font-bold text-lg">
+              <span className="text-2xl">🏥</span>
+              <span className="hidden sm:block">HealthTwin AI</span>
             </Link>
-            <Link to="/simulate"
-              style={{ color: "white", textDecoration: "none",
-                       fontSize: "0.85rem" }}>
-              Simulate
-            </Link>
-            <Link to="/forecast"
-              style={{ color: "white", textDecoration: "none",
-                       fontSize: "0.85rem" }}>
-              Forecast
-            </Link>
-            <Link to="/history"
-              style={{ color: "white", textDecoration: "none",
-                       fontSize: "0.85rem" }}>
-              History
-            </Link>
-            <span style={{ fontSize: "0.9rem", marginLeft: "1rem" }}>
-              Welcome, {user.full_name || user.username}
-            </span>
-            <button onClick={handleLogout} style={{
-              background: "white", color: "#1e40af",
-              border: "none", padding: "0.4rem 1rem",
-              borderRadius: "6px", cursor: "pointer",
-              fontWeight: "bold"
-            }}>
-              Logout
-            </button>
-          </>
-        ) : (
-          <Link to="/login" style={{ color: "white", textDecoration: "none", fontSize: "0.85rem" }}>
-            Login
-          </Link>
+
+            {/* Desktop nav links */}
+            <div className="hidden md:flex items-center gap-1">
+              {NAV_LINKS.map(link => (
+                <Link key={link.path} to={link.path}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg
+                    text-sm font-medium transition-all duration-150
+                    ${isActive(link.path)
+                      ? 'bg-white/20 text-white'
+                      : 'text-primary-200 hover:text-white hover:bg-white/10'
+                    }`}>
+                  <span>{link.icon}</span>
+                  <span>{link.label}</span>
+                </Link>
+              ))}
+            </div>
+
+            {/* User area */}
+            <div className="flex items-center gap-3">
+              {user && (
+                <>
+                  <span className="hidden sm:block text-primary-200 text-sm">
+                    {user.full_name || user.username}
+                  </span>
+                  <button onClick={handleLogout}
+                    className="bg-white/10 hover:bg-white/20 text-white
+                               text-sm font-medium px-3 py-1.5 rounded-lg
+                               transition-all duration-150 border border-white/20">
+                    Logout
+                  </button>
+                </>
+              )}
+              {/* Mobile menu button */}
+              <button
+                className="md:hidden text-white p-1"
+                onClick={() => setMenuOpen(!menuOpen)}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  {menuOpen
+                    ? <path strokeLinecap="round" strokeLinejoin="round"
+                        strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+                    : <path strokeLinecap="round" strokeLinejoin="round"
+                        strokeWidth={2} d="M4 6h16M4 12h16M4 18h16"/>
+                  }
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile dropdown menu */}
+        {menuOpen && (
+          <div className="md:hidden bg-primary-900 border-t border-primary-700
+                          px-4 py-3 space-y-1 animate-fade-in">
+            {NAV_LINKS.map(link => (
+              <Link key={link.path} to={link.path}
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg
+                  text-sm font-medium transition-all
+                  ${isActive(link.path)
+                    ? 'bg-white/20 text-white'
+                    : 'text-primary-200 hover:text-white hover:bg-white/10'
+                  }`}>
+                <span>{link.icon}</span>
+                <span>{link.label}</span>
+              </Link>
+            ))}
+          </div>
         )}
+      </nav>
+
+      {/* Mobile bottom navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50
+                      bg-white border-t border-gray-200 shadow-2xl">
+        <div className="flex justify-around py-2">
+          {NAV_LINKS.map(link => (
+            <Link key={link.path} to={link.path}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5
+                rounded-lg transition-all
+                ${isActive(link.path)
+                  ? 'text-primary-700'
+                  : 'text-gray-400 hover:text-gray-600'
+                }`}>
+              <span className="text-lg">{link.icon}</span>
+              <span className="text-xs font-medium">{link.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
-    </nav>
+    </>
   )
 }
