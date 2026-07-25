@@ -8,11 +8,11 @@ import Navbar from "../components/Navbar"
 import HealthScoreGauge from "../components/HealthScoreGauge"
 import RiskCard from "../components/RiskCard"
 import { healthAPI } from "../api/client"
+import { useAuth } from "../context/AuthContext"
 
 const CONDITIONS_LABEL = {
   diabetes: "Type 2 Diabetes", hypertension: "Hypertension",
-  heart: "Heart Disease",      obesity: "Obesity",
-  stress: "Stress"
+  heart: "Heart Disease", obesity: "Obesity", stress: "Stress"
 }
 
 function ShapChart({ condition, features }) {
@@ -21,25 +21,17 @@ function ShapChart({ condition, features }) {
     .sort((a, b) => Math.abs(b.shap_value) - Math.abs(a.shap_value))
     .slice(0, 6)
     .map(f => ({
-      feature: f.feature.length > 14
-        ? f.feature.slice(0, 13) + "…"
-        : f.feature,
+      feature: f.feature.length > 14 ? f.feature.slice(0, 13) + "…" : f.feature,
       value: parseFloat(f.shap_value.toFixed(4)),
-      abs: Math.abs(f.shap_value)
     }))
 
   return (
-    <div style={{ background: "white", borderRadius: "12px",
-                  padding: "1.25rem",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                  marginBottom: "1rem" }}>
-      <h4 style={{ color: "#374151", marginBottom: "0.75rem",
-                   fontSize: "0.95rem" }}>
-        {CONDITIONS_LABEL[condition]} — Feature Impact (SHAP)
+    <div className="card mb-4 animate-fade-in">
+      <h4 className="font-semibold text-gray-700 mb-1 text-sm">
+        {CONDITIONS_LABEL[condition]} — Feature Impact
       </h4>
-      <p style={{ fontSize: "0.75rem", color: "#9ca3af",
-                  marginBottom: "0.75rem" }}>
-        🔴 Red = increases risk &nbsp;|&nbsp; 🟢 Green = reduces risk
+      <p className="text-xs text-gray-400 mb-3">
+        🔴 Increases risk &nbsp;·&nbsp; 🟢 Reduces risk
       </p>
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={data} layout="vertical"
@@ -48,13 +40,11 @@ function ShapChart({ condition, features }) {
           <XAxis type="number" tick={{ fontSize: 11 }} />
           <YAxis type="category" dataKey="feature"
                  tick={{ fontSize: 11 }} width={110} />
-          <Tooltip
-            formatter={(v) => [v.toFixed(4), "SHAP value"]}
-          />
+          <Tooltip formatter={(v) => [v.toFixed(4), "SHAP value"]} />
           <Bar dataKey="value" radius={[0, 4, 4, 0]}>
             {data.map((entry, i) => (
               <Cell key={i}
-                fill={entry.value > 0 ? "#ef4444" : "#22c55e"} />
+                fill={entry.value > 0 ? "#ef4444" : "#10b981"} />
             ))}
           </Bar>
         </BarChart>
@@ -69,6 +59,7 @@ export default function DashboardPage() {
   const [recommendations, setRecommendations] = useState([])
   const [activeTab, setActiveTab] = useState("overview")
   const [loadingRecs, setLoadingRecs] = useState(false)
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -96,8 +87,8 @@ export default function DashboardPage() {
   const downloadReport = async () => {
     try {
       const token = sessionStorage.getItem("healthtwin_token")
-      const res = await fetch(
-        (import.meta.env.VITE_API_URL || "http://localhost:8000") + "/api/export-pdf",
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+      const res = await fetch(`${apiUrl}/api/export-pdf`,
         { headers: { Authorization: "Bearer " + token } }
       )
       if (!res.ok) throw new Error("Export failed")
@@ -115,126 +106,116 @@ export default function DashboardPage() {
 
   const hasResults = predictions.length > 0
 
-  const tabStyle = (tab) => ({
-    padding: "0.6rem 1.25rem",
-    borderRadius: "8px",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "0.9rem",
-    background: activeTab === tab ? "#1e40af" : "#e5e7eb",
-    color: activeTab === tab ? "white" : "#374151"
-  })
+  const TABS = [
+    { id: "overview",        label: "📊 Overview" },
+    { id: "explainability",  label: "🔍 Explainability" },
+    { id: "recommendations", label: "💡 Recommendations" },
+  ]
 
-  const tierColors = { 1: "#fef2f2", 2: "#fffbeb", 3: "#f0fdf4" }
-  const tierBorder = { 1: "#fca5a5", 2: "#fcd34d", 3: "#86efac" }
+  const tierColors = {
+    1: "bg-red-50 border-red-200",
+    2: "bg-amber-50 border-amber-200",
+    3: "bg-emerald-50 border-emerald-200"
+  }
+  const tierIcons = { 1: "⚠️", 2: "📋", 3: "✅" }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <Navbar />
-      <div style={{ maxWidth: "1100px", margin: "0 auto",
-                    padding: "2rem 1rem" }}>
+      <div className="max-w-6xl mx-auto px-4 py-6">
 
-        {/* Header row */}
-        <div style={{ display: "flex", justifyContent: "space-between",
-                      alignItems: "center", marginBottom: "1.5rem",
-                      flexWrap: "wrap", gap: "1rem" }}>
-          <h2 style={{ color: "#1e40af" }}>Your Health Dashboard</h2>
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <button
-              onClick={() => navigate("/assessment")}
-              style={{ padding: "0.75rem 1.5rem", background: "#1e40af",
-                       color: "white", border: "none", borderRadius: "10px",
-                       fontWeight: "bold", cursor: "pointer",
-                       fontSize: "0.95rem" }}>
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Health Dashboard
+            </h2>
+            <p className="text-gray-500 text-sm mt-0.5">
+              Welcome back, {user?.full_name || user?.username} 👋
+            </p>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => navigate("/assessment")}
+              className="btn-primary text-sm py-2 px-4">
               🩺 {hasResults ? "Retake Assessment" : "Start Assessment"}
             </button>
-            <button
-              onClick={() => navigate("/simulate")}
-              style={{ padding: "0.75rem 1.5rem", background: "#7c3aed",
-                       color: "white", border: "none", borderRadius: "10px",
-                       fontWeight: "bold", cursor: "pointer",
-                       fontSize: "0.95rem" }}>
-              🔮 What-If Simulation
-            </button>
             {hasResults && (
-              <button onClick={downloadReport}
-                style={{ padding: "0.75rem 1.5rem",
-                         background: "#059669", color: "white",
-                         border: "none", borderRadius: "10px",
-                         fontWeight: "bold", cursor: "pointer",
-                         fontSize: "0.95rem" }}>
-                📄 Export PDF
-              </button>
+              <>
+                <button onClick={() => navigate("/simulate")}
+                  className="btn-secondary text-sm py-2 px-4">
+                  🔮 Simulate
+                </button>
+                <button onClick={downloadReport}
+                  className="btn-success text-sm py-2 px-4">
+                  📄 PDF
+                </button>
+              </>
             )}
           </div>
         </div>
 
         {!hasResults ? (
-          <div style={{ textAlign: "center", padding: "4rem 2rem",
-                        background: "white", borderRadius: "16px",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <p style={{ fontSize: "3rem", marginBottom: "1rem" }}>🏥</p>
-            <h3 style={{ color: "#374151", marginBottom: "0.75rem" }}>
+          /* Empty state */
+          <div className="card text-center py-16 animate-fade-in">
+            <div className="text-6xl mb-4">🏥</div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
               No health data yet
             </h3>
-            <p style={{ color: "#6b7280", marginBottom: "1.5rem" }}>
-              Complete your health assessment to see personalised
-              risk predictions and recommendations.
+            <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+              Complete your first health assessment to get personalised
+              AI-powered risk predictions and recommendations.
             </p>
-            <button
-              onClick={() => navigate("/assessment")}
-              style={{ padding: "0.85rem 2rem", background: "#1e40af",
-                       color: "white", border: "none",
-                       borderRadius: "10px", fontWeight: "bold",
-                       cursor: "pointer", fontSize: "1rem" }}>
+            <button onClick={() => navigate("/assessment")}
+              className="btn-primary mx-auto">
               Start Your Assessment →
             </button>
           </div>
         ) : (
           <>
             {/* Health Score */}
-            <div style={{ marginBottom: "2rem" }}>
+            <div className="mb-6">
               <HealthScoreGauge
                 score={healthScore}
                 breakdown={healthScore?.breakdown}
               />
             </div>
 
-            {/* Tab navigation */}
-            <div style={{ display: "flex", gap: "0.5rem",
-                          marginBottom: "1.5rem", flexWrap: "wrap" }}>
-              {["overview", "explainability", "recommendations"].map(tab => (
-                <button key={tab} style={tabStyle(tab)}
+            {/* Tabs */}
+            <div className="flex gap-2 mb-5 flex-wrap">
+              {TABS.map(tab => (
+                <button key={tab.id}
                   onClick={() => {
-                    if (tab === "recommendations") fetchRecommendations()
-                    else setActiveTab(tab)
-                  }}>
-                  {tab === "overview"        ? "📊 Risk Overview" :
-                   tab === "explainability"  ? "🔍 Explainability" :
-                   "💡 Recommendations"}
+                    if (tab.id === "recommendations") fetchRecommendations()
+                    else setActiveTab(tab.id)
+                  }}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold
+                    transition-all duration-150 border
+                    ${activeTab === tab.id
+                      ? 'bg-primary-700 text-white border-primary-700 shadow-md'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300'
+                    }`}>
+                  {tab.label}
+                  {tab.id === "recommendations" && loadingRecs &&
+                    <span className="ml-1 animate-spin inline-block">⏳</span>}
                 </button>
               ))}
             </div>
 
-            {/* Overview tab */}
+            {/* Overview */}
             {activeTab === "overview" && (
-              <div style={{ display: "flex", gap: "1rem",
-                            flexWrap: "wrap" }}>
+              <div className="flex flex-wrap gap-4 animate-fade-in">
                 {predictions.map(p => (
                   <RiskCard key={p.condition} {...p} />
                 ))}
               </div>
             )}
 
-            {/* Explainability tab */}
+            {/* Explainability */}
             {activeTab === "explainability" && (
-              <div>
-                <p style={{ color: "#6b7280", marginBottom: "1rem",
-                            fontSize: "0.9rem" }}>
+              <div className="animate-fade-in">
+                <p className="text-gray-500 text-sm mb-4">
                   These charts show which factors are driving each
-                  risk prediction. Red bars push risk up,
-                  green bars pull it down.
+                  risk prediction. Red = increases risk, Green = reduces risk.
                 </p>
                 {predictions.map(p => (
                   <ShapChart key={p.condition}
@@ -244,46 +225,35 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Recommendations tab */}
+            {/* Recommendations */}
             {activeTab === "recommendations" && (
-              <div>
+              <div className="animate-fade-in space-y-3">
                 {loadingRecs ? (
-                  <p style={{ color: "#6b7280" }}>
-                    Generating recommendations...
-                  </p>
+                  <div className="card text-center py-8 text-gray-400">
+                    ⏳ Generating personalised recommendations...
+                  </div>
                 ) : recommendations.length === 0 ? (
-                  <p style={{ color: "#6b7280" }}>
-                    No recommendations loaded yet.
-                  </p>
-                ) : (
-                  recommendations.map((rec, i) => (
-                    <div key={i} style={{
-                      background: tierColors[rec.tier] || "#f9fafb",
-                      border: `1px solid ${tierBorder[rec.tier] || "#e5e7eb"}`,
-                      borderRadius: "12px", padding: "1.25rem",
-                      marginBottom: "0.75rem"
-                    }}>
-                      <div style={{ display: "flex", gap: "0.75rem",
-                                    alignItems: "flex-start" }}>
-                        <span style={{ fontSize: "1.25rem" }}>
-                          {rec.tier === 1 ? "⚠️" :
-                           rec.tier === 2 ? "📋" : "✅"}
-                        </span>
-                        <div>
-                          <p style={{ fontWeight: "600", fontSize: "0.85rem",
-                                      color: "#6b7280",
-                                      marginBottom: "0.25rem" }}>
-                            {rec.priority} — {rec.condition.toUpperCase()}
-                          </p>
-                          <p style={{ color: "#111827",
-                                      lineHeight: "1.5" }}>
-                            {rec.recommendation}
-                          </p>
-                        </div>
+                  <div className="card text-center py-8 text-gray-400">
+                    No recommendations yet.
+                  </div>
+                ) : recommendations.map((rec, i) => (
+                  <div key={i}
+                    className={`rounded-2xl border-2 p-4 ${tierColors[rec.tier] || tierColors[3]}`}>
+                    <div className="flex gap-3">
+                      <span className="text-xl shrink-0">
+                        {tierIcons[rec.tier]}
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+                          {rec.priority} — {rec.condition}
+                        </p>
+                        <p className="text-gray-800 text-sm leading-relaxed">
+                          {rec.recommendation}
+                        </p>
                       </div>
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
               </div>
             )}
           </>
