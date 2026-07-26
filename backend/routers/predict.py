@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from backend.chatbot import generate_response
 from fastapi.responses import Response
 from backend.schemas import HealthInput, PredictResponse
 from backend.pdf_report import generate_pdf_report
@@ -137,3 +139,23 @@ def export_pdf(current_user: dict = Depends(get_current_user)):
         headers={"Content-Disposition":
             f"attachment; filename=healthtwin_report_{current_user['username']}.pdf"}
     )
+
+class ChatRequest(BaseModel):
+    message: str
+    include_predictions: bool = True
+
+@router.post("/chat")
+def chat(request: ChatRequest,
+         current_user: dict = Depends(get_current_user)):
+    predictions = None
+    if request.include_predictions:
+        records = list(
+            predictions_collection
+            .find({"username": current_user["username"]}, {"_id": 0})
+            .sort("timestamp", -1)
+            .limit(1)
+        )
+        if records:
+            predictions = records[0].get("predictions", [])
+    response = generate_response(request.message, predictions)
+    return {"response": response, "intent": "health_assistant"}

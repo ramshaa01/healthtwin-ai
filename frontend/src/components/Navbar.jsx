@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { path: "/simulate",   label: "Simulate",    icon: "🔮" },
   { path: "/forecast",   label: "Forecast",    icon: "📈" },
   { path: "/history",    label: "History",     icon: "📋" },
+  { path: "/chat", label: "Chat", icon: "💬" },
 ]
 
 export default function Navbar() {

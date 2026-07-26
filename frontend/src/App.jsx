@@ -8,7 +8,7 @@ import AssessmentPage from "./pages/AssessmentPage"
 import SimulatePage from "./pages/SimulatePage"
 import ForecastPage from "./pages/ForecastPage"
 import HistoryPage from "./pages/HistoryPage"
-
+import ChatPage from "./pages/ChatPage"
 export default function App() {
   return (
     <BrowserRouter>
@@ -30,6 +30,9 @@ export default function App() {
           } />
           <Route path="/history" element={
             <ProtectedRoute><HistoryPage /></ProtectedRoute>
+          } />
+          <Route path="/chat" element={
+            <ProtectedRoute><ChatPage /></ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
