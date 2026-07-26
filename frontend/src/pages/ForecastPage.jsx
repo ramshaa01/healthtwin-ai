@@ -8,227 +8,143 @@ import Navbar from "../components/Navbar"
 import { healthAPI } from "../api/client"
 
 const CONDITIONS = ["diabetes","hypertension","heart","obesity","stress"]
-const CONDITION_LABELS = {
-  diabetes: "Diabetes", hypertension: "Hypertension",
-  heart: "Heart Disease", obesity: "Obesity", stress: "Stress"
-}
-const COLORS = {
-  diabetes: "#3b82f6", hypertension: "#ef4444",
-  heart: "#f97316", obesity: "#a855f7", stress: "#ec4899"
-}
-
+const LABELS = { diabetes:"Diabetes", hypertension:"Hypertension",
+  heart:"Heart Disease", obesity:"Obesity", stress:"Stress" }
+const COLORS = { diabetes:"#3b82f6", hypertension:"#ef4444",
+  heart:"#f97316", obesity:"#a855f7", stress:"#ec4899" }
 const MONTHS = ["Now","Jan","Feb","Mar","Apr","May",
                 "Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 
 export default function ForecastPage() {
-  const [forecast, setForecast]       = useState(null)
-  const [loading, setLoading]         = useState(true)
-  const [error, setError]             = useState("")
-  const [selected, setSelected]       = useState("diabetes")
+  const [forecast, setForecast] = useState(null)
+  const [loading, setLoading]   = useState(true)
+  const [selected, setSelected] = useState("diabetes")
+  const [error, setError]       = useState("")
   const navigate = useNavigate()
 
   useEffect(() => {
     const stored = sessionStorage.getItem("healthtwin_result")
     if (!stored) { navigate("/assessment"); return }
-    runForecast()
+    run()
   }, [navigate])
 
-  const runForecast = async () => {
+  const run = async () => {
     setLoading(true)
     setError("")
     try {
       const res = await healthAPI.forecast()
       setForecast(res.data)
     } catch (e) {
-      setError(e.response?.data?.detail ||
-               "Forecast failed. Please run assessment first.")
+      setError("Forecast failed. Please run assessment first.")
     } finally {
       setLoading(false)
     }
   }
 
-  // Build chart data: interpolate best/expected/worst over 12 months
-  const buildChartData = (condition) => {
+  const buildData = (c) => {
     if (!forecast) return []
-    const t = forecast.trajectories[condition]
+    const t = forecast.trajectories[c]
     if (!t) return []
     const stored = sessionStorage.getItem("healthtwin_result")
-    const current = stored
-      ? JSON.parse(stored).predictions
-          .find(p => p.condition === condition)?.risk_probability ?? t.expected
+    const cur = stored
+      ? JSON.parse(stored).predictions.find(p=>p.condition===c)?.risk_probability ?? t.expected
       : t.expected
-
     return MONTHS.map((month, i) => {
-      const frac = i / 12
+      const f = i / 12
       return {
         month,
-        "Best Case":  parseFloat(
-          (current + (t.best_case  - current) * frac).toFixed(4)),
-        "Expected":   parseFloat(
-          (current + (t.expected   - current) * frac).toFixed(4)),
-        "Worst Case": parseFloat(
-          (current + (t.worst_case - current) * frac).toFixed(4)),
+        "Best Case":  parseFloat((cur+(t.best_case -cur)*f).toFixed(4)),
+        "Expected":   parseFloat((cur+(t.expected  -cur)*f).toFixed(4)),
+        "Worst Case": parseFloat((cur+(t.worst_case-cur)*f).toFixed(4)),
       }
     })
   }
 
-  const chartData = buildChartData(selected)
   const traj = forecast?.trajectories?.[selected]
 
-  const pct = (v) => v !== undefined
-    ? (v * 100).toFixed(1) + "%" : "—"
-
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
+    <div className="min-h-screen bg-gray-50 pb-24 md:pb-6">
       <Navbar />
-      <div style={{ maxWidth: "1000px", margin: "0 auto",
-                    padding: "2rem 1rem" }}>
-
-        <div style={{ display: "flex", justifyContent: "space-between",
-                      alignItems: "center", marginBottom: "1.5rem",
-                      flexWrap: "wrap", gap: "1rem" }}>
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="flex flex-wrap justify-between items-start gap-3 mb-6">
           <div>
-            <h2 style={{ color: "#1e40af" }}>
-              📈 12-Month Risk Forecast
-            </h2>
-            <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>
-              Monte Carlo simulation (100 variations) showing your
-              probable risk trajectory over the next year.
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900">📈 12-Month Forecast</h2>
+            <p className="text-gray-500 text-sm mt-1">Monte Carlo simulation — 100 variations</p>
           </div>
-          <button onClick={runForecast}
-            style={{ padding: "0.6rem 1.25rem", background: "#1e40af",
-                     color: "white", border: "none",
-                     borderRadius: "8px", fontWeight: "bold",
-                     cursor: "pointer" }}>
-            🔄 Recalculate
-          </button>
+          <button onClick={run} className="btn-secondary text-sm py-2 px-4">🔄 Recalculate</button>
         </div>
 
         {error && (
-          <div style={{ background: "#fef2f2",
-                        border: "1px solid #fca5a5",
-                        padding: "0.75rem", borderRadius: "8px",
-                        color: "#dc2626", marginBottom: "1rem" }}>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-red-700 text-sm">
             {error}
           </div>
         )}
 
         {loading ? (
-          <div style={{ textAlign: "center", padding: "4rem",
-                        background: "white", borderRadius: "16px",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <p style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>
-              ⏳
-            </p>
-            <p style={{ color: "#6b7280" }}>
-              Running 100 Monte Carlo simulations...
-            </p>
+          <div className="card text-center py-16">
+            <div className="text-4xl mb-3 animate-pulse">⏳</div>
+            <p className="text-gray-500 font-medium">Running 100 Monte Carlo simulations...</p>
+            <p className="text-gray-400 text-sm mt-1">This may take a few seconds</p>
           </div>
         ) : (
           <>
-            {/* Condition selector tabs */}
-            <div style={{ display: "flex", gap: "0.5rem",
-                          marginBottom: "1.5rem", flexWrap: "wrap" }}>
+            {/* Condition selector pills */}
+            <div className="flex gap-2 flex-wrap mb-5">
               {CONDITIONS.map(c => (
-                <button key={c}
-                  onClick={() => setSelected(c)}
-                  style={{
-                    padding: "0.5rem 1rem", borderRadius: "8px",
-                    border: `2px solid ${COLORS[c]}`,
-                    background: selected === c ? COLORS[c] : "white",
-                    color: selected === c ? "white" : COLORS[c],
-                    fontWeight: "600", cursor: "pointer",
-                    fontSize: "0.85rem"
-                  }}>
-                  {CONDITION_LABELS[c]}
+                <button key={c} onClick={() => setSelected(c)}
+                  style={selected===c
+                    ? { background: COLORS[c], borderColor: COLORS[c], color: 'white' }
+                    : { color: COLORS[c], borderColor: COLORS[c] }}
+                  className="px-4 py-1.5 rounded-xl text-sm font-semibold border-2 bg-white transition-all">
+                  {LABELS[c]}
                 </button>
               ))}
             </div>
 
-            {/* Summary cards */}
+            {/* 3-scenario summary cards */}
             {traj && (
-              <div style={{ display: "flex", gap: "1rem",
-                            marginBottom: "1.5rem", flexWrap: "wrap" }}>
+              <div className="grid grid-cols-3 gap-3 mb-5">
                 {[
-                  { label: "Best Case",  key: "best_case",
-                    color: "#16a34a", icon: "🌟",
-                    sub: "If habits improve" },
-                  { label: "Expected",   key: "expected",
-                    color: "#d97706", icon: "📊",
-                    sub: "Most likely outcome" },
-                  { label: "Worst Case", key: "worst_case",
-                    color: "#dc2626", icon: "⚠️",
-                    sub: "If habits worsen" },
-                ].map(card => (
-                  <div key={card.key} style={{
-                    flex: 1, minWidth: "150px",
-                    background: "white", borderRadius: "12px",
-                    padding: "1.25rem", textAlign: "center",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                    borderTop: `4px solid ${card.color}`
-                  }}>
-                    <p style={{ fontSize: "1.5rem",
-                                marginBottom: "0.25rem" }}>
-                      {card.icon}
+                  { label: "Best Case",  k: "best_case",  icon: "🌟", sub: "If habits improve",  cls: "border-emerald-400 text-emerald-600" },
+                  { label: "Expected",   k: "expected",   icon: "📊", sub: "Most likely",         cls: "border-amber-400 text-amber-600" },
+                  { label: "Worst Case", k: "worst_case", icon: "⚠️", sub: "If habits worsen",   cls: "border-red-400 text-red-600" },
+                ].map(c => (
+                  <div key={c.k} className={`card border-t-4 ${c.cls} text-center p-4`}>
+                    <p className="text-xl mb-1">{c.icon}</p>
+                    <p className={`text-xl font-bold ${c.cls.split(' ')[1]}`}>
+                      {traj[c.k] !== undefined ? (traj[c.k] * 100).toFixed(1) + "%" : "—"}
                     </p>
-                    <p style={{ fontSize: "1.75rem", fontWeight: "bold",
-                                color: card.color }}>
-                      {pct(traj[card.key])}
-                    </p>
-                    <p style={{ fontWeight: "600", color: "#374151",
-                                fontSize: "0.9rem" }}>
-                      {card.label}
-                    </p>
-                    <p style={{ color: "#9ca3af", fontSize: "0.75rem" }}>
-                      {card.sub}
-                    </p>
+                    <p className="text-xs font-semibold text-gray-600 mt-1">{c.label}</p>
+                    <p className="text-xs text-gray-400">{c.sub}</p>
                   </div>
                 ))}
               </div>
             )}
 
             {/* Line chart */}
-            <div style={{ background: "white", borderRadius: "16px",
-                          padding: "1.5rem",
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-              <h3 style={{ color: "#374151", marginBottom: "1rem" }}>
-                {CONDITION_LABELS[selected]} — 12-Month Trajectory
+            <div className="card">
+              <h3 className="font-bold text-gray-800 mb-4">
+                {LABELS[selected]} — 12-Month Trajectory
               </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}
-                  margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={buildData(selected)}
+                  margin={{ top: 5, right: 40, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tickFormatter={v => (v*100).toFixed(0) + "%"}
-                         domain={[0, 1]} tick={{ fontSize: 11 }} />
-                  <Tooltip
-                    formatter={(v, name) =>
-                      [(v*100).toFixed(1) + "%", name]} />
+                  <YAxis tickFormatter={v => (v * 100).toFixed(0) + "%"} domain={[0, 1]} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(v, n) => [(v * 100).toFixed(1) + "%", n]} />
                   <Legend />
-                  <ReferenceLine y={0.7} stroke="#ef4444"
-                    strokeDasharray="4 4"
-                    label={{ value: "High Risk", fontSize: 11,
-                             fill: "#ef4444", position: "right" }} />
-                  <ReferenceLine y={0.4} stroke="#f59e0b"
-                    strokeDasharray="4 4"
-                    label={{ value: "Moderate", fontSize: 11,
-                             fill: "#f59e0b", position: "right" }} />
-                  <Line type="monotone" dataKey="Best Case"
-                    stroke="#16a34a" strokeWidth={2}
-                    dot={false} strokeDasharray="5 5" />
-                  <Line type="monotone" dataKey="Expected"
-                    stroke={COLORS[selected]} strokeWidth={3} dot={false} />
-                  <Line type="monotone" dataKey="Worst Case"
-                    stroke="#ef4444" strokeWidth={2}
-                    dot={false} strokeDasharray="5 5" />
+                  <ReferenceLine y={0.7} stroke="#ef4444" strokeDasharray="4 4"
+                    label={{ value: "High 70%", fontSize: 10, fill: "#ef4444", position: "right" }} />
+                  <ReferenceLine y={0.4} stroke="#f59e0b" strokeDasharray="4 4"
+                    label={{ value: "Mod 40%", fontSize: 10, fill: "#f59e0b", position: "right" }} />
+                  <Line type="monotone" dataKey="Best Case" stroke="#10b981" strokeWidth={2} dot={false} strokeDasharray="5 5" />
+                  <Line type="monotone" dataKey="Expected" stroke={COLORS[selected]} strokeWidth={3} dot={false} />
+                  <Line type="monotone" dataKey="Worst Case" stroke="#ef4444" strokeWidth={2} dot={false} strokeDasharray="5 5" />
                 </LineChart>
               </ResponsiveContainer>
-              <p style={{ color: "#9ca3af", fontSize: "0.75rem",
-                          marginTop: "0.75rem", textAlign: "center" }}>
-                Based on 100 Monte Carlo simulations with realistic
-                week-to-week lifestyle variability.
-                Dashed lines = thresholds for High (70%) and Moderate (40%) risk.
+              <p className="text-xs text-gray-400 text-center mt-2">
+                Dashed lines = risk thresholds. Green dashed = best case, Red dashed = worst case.
               </p>
             </div>
           </>

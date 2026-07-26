@@ -2,3 +2,31 @@ venv/
 __pycache__/
 .vscode/
 .idea/
+*.env
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Node
+node_modules/
+frontend/dist/
+
+# Windows installer and large binary files
+*.msi
+*.exe
+*.dmg
+*.pkg
+*.zip
+*.tar.gz
+
+# Test/scratch output files
+predict_out.json
+predict_output.json
+sim_out.json
+test_output.json
+test_auth_output.txt
+test_forecast_output.txt
+test_polish_output.txt
