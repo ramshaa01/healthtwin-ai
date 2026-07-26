@@ -9,6 +9,7 @@ import SimulatePage from "./pages/SimulatePage"
 import ForecastPage from "./pages/ForecastPage"
 import HistoryPage from "./pages/HistoryPage"
 import ChatPage from "./pages/ChatPage"
+import TrendsPage from "./pages/TrendsPage"
 export default function App() {
   return (
     <BrowserRouter>
@@ -33,6 +34,9 @@ export default function App() {
           } />
           <Route path="/chat" element={
             <ProtectedRoute><ChatPage /></ProtectedRoute>
+          } />
+          <Route path="/trends" element={
+            <ProtectedRoute><TrendsPage /></ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

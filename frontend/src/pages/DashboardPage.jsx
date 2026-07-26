@@ -141,6 +141,10 @@ export default function DashboardPage() {
             </button>
             {hasResults && (
               <>
+                <button onClick={() => navigate("/trends")}
+                  className="btn-secondary text-sm py-2 px-4">
+                  📊 View Trends
+                </button>
                 <button onClick={() => navigate("/simulate")}
                   className="btn-secondary text-sm py-2 px-4">
                   🔮 Simulate
