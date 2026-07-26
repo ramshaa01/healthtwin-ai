@@ -9,6 +9,9 @@ const QUICK_QUESTIONS = [
   "Best diet for heart health?",
   "How to reduce stress?",
   "How much exercise do I need?",
+  "How to sleep better?",
+  "Symptoms of obesity?",
+  "What is a good diet for diabetes?",
 ]
 
 function Bubble({ msg }) {
