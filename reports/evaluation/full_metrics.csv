@@ -1,0 +1,6 @@
+Condition,Algorithm,Accuracy,Precision,Recall,F1 Score,ROC-AUC,Avg Precision,Specificity,TP,TN,FP,FN
+Type 2 Diabetes,XGBoost,0.7077,0.2892,0.7534,0.418,0.7985,0.3622,0.7003,5326,30578,13089,1743
+Hypertension,Logistic Regression,0.571,0.0,0.0,0.0,0.7538,0.6855,1.0,0,28970,0,21766
+Heart Disease,Random Forest,0.6721,0.6333,0.6786,0.6552,0.7121,0.6853,0.6667,19,22,11,9
+Obesity,Gradient Boosting,0.9291,0.9547,0.9486,0.9516,0.969,0.9893,0.875,295,98,14,16
+Mental Stress,Decision Tree,0.9867,1.0,0.9787,0.9892,0.9954,0.9969,1.0,46,28,0,1
