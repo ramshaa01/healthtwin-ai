@@ -131,9 +131,33 @@ def run_prediction(condition: str, bmi: float, raw_input: dict) -> dict:
     else:
         X_input = X
 
-    prob = float(model.predict_proba(X_input)[0][1])
+    raw_prob = float(model.predict_proba(X_input)[0][1])
 
-    if prob >= 0.7:
+    # Use optimal threshold for hypertension (LR model skews low)
+    if condition == 'hypertension':
+        try:
+            thresh_info = joblib.load('models/hypertension_threshold.pkl')
+            optimal_threshold = thresh_info['optimal_threshold']
+            # Still return the raw probability (for UI display)
+            # but adjust risk_level classification
+            prob = raw_prob
+            # Override risk level based on optimal threshold
+            if raw_prob >= optimal_threshold:
+                risk_level_override = "High"
+            elif raw_prob >= optimal_threshold * 0.6:
+                risk_level_override = "Moderate"
+            else:
+                risk_level_override = "Low"
+        except:
+            prob = raw_prob
+            risk_level_override = None
+    else:
+        prob = raw_prob
+        risk_level_override = None
+
+    if risk_level_override:
+        risk_level = risk_level_override
+    elif prob >= 0.7:
         risk_level = "High"
     elif prob >= 0.4:
         risk_level = "Moderate"
