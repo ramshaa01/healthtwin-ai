@@ -141,6 +141,11 @@ export default function DashboardPage() {
             </button>
             {hasResults && (
               <>
+                <button onClick={() => navigate("/twin")}
+                  className="btn-primary text-sm py-2 px-4"
+                  style={{background:"linear-gradient(135deg,#1e40af,#7c3aed)"}}>
+                  🫀 Digital Twin
+                </button>
                 <button onClick={() => navigate("/trends")}
                   className="btn-secondary text-sm py-2 px-4">
                   📊 View Trends

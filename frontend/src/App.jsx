@@ -10,6 +10,7 @@ import ForecastPage from "./pages/ForecastPage"
 import HistoryPage from "./pages/HistoryPage"
 import ChatPage from "./pages/ChatPage"
 import TrendsPage from "./pages/TrendsPage"
+import DigitalTwinPage from "./pages/DigitalTwinPage"
 export default function App() {
   return (
     <BrowserRouter>
@@ -37,6 +38,9 @@ export default function App() {
           } />
           <Route path="/trends" element={
             <ProtectedRoute><TrendsPage /></ProtectedRoute>
+          } />
+          <Route path="/twin" element={
+            <ProtectedRoute><DigitalTwinPage /></ProtectedRoute>
           } />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

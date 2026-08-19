@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { path: "/history",    label: "History",     icon: "📋" },
   { path: "/chat", label: "Chat", icon: "💬" },
   { path: "/trends", label: "Trends", icon: "📊" },
+  { path: "/twin", label: "Twin", icon: "🫀" },
 ]
 
 export default function Navbar() {
@@ -113,7 +114,7 @@ export default function Navbar() {
                       bg-white border-t border-gray-200 shadow-2xl">
         <div className="flex justify-around py-2">
           {NAV_LINKS.filter(l =>
-            ["/dashboard","/assessment","/simulate","/chat","/trends"]
+            ["/dashboard","/assessment","/twin","/chat","/trends"]
             .includes(l.path)
           ).map(link => (
             <Link key={link.path} to={link.path}
