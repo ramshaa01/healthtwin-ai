@@ -5,6 +5,7 @@ import {
   Tooltip, ResponsiveContainer, Cell
 } from "recharts"
 import Navbar from "../components/Navbar"
+import DigitalTwinBody from "../components/DigitalTwinBody"
 import HealthScoreGauge from "../components/HealthScoreGauge"
 import RiskCard from "../components/RiskCard"
 import { healthAPI } from "../api/client"
@@ -212,12 +213,178 @@ export default function DashboardPage() {
 
             {/* Overview */}
             {activeTab === "overview" && (
-              <div className="flex flex-wrap gap-4 animate-fade-in">
-                {predictions.map(p => (
-                  <RiskCard key={p.condition} {...p} />
-                ))}
+        <div className="animate-fade-in">
+          {/* Twin + Cards layout */}
+          <div style={{
+            display:"grid",
+            gridTemplateColumns:"1fr auto 1fr",
+            gap:"16px",
+            alignItems:"start",
+            background:"linear-gradient(135deg,#06111f,#0d1f35)",
+            borderRadius:"20px",
+            padding:"20px",
+            marginBottom:"20px"
+          }}>
+            {/* Left cards */}
+            <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+              {predictions.filter(p =>
+                ["stress","hypertension","heart"].includes(p.condition)
+              ).map(p => (
+                <div key={p.condition} style={{
+                  background:"rgba(6,17,31,0.9)",
+                  border:"0.5px solid rgba(255,255,255,0.1)",
+                  borderRadius:"12px", padding:"12px 14px"
+                }}>
+                  <div style={{
+                    fontSize:"10px",color:"rgba(255,255,255,0.4)",
+                    marginBottom:"4px",display:"flex",
+                    justifyContent:"space-between"
+                  }}>
+                    {({stress:"Stress",hypertension:"Hypertension",
+                       heart:"Heart Disease"})[p.condition]}
+                    <span>→</span>
+                  </div>
+                  <div style={{
+                    fontSize:"24px",fontWeight:"700",color:"white",lineHeight:1
+                  }}>
+                    {Math.round(p.risk_probability*100)}
+                    <span style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>%</span>
+                  </div>
+                  <div style={{
+                    display:"inline-block",fontSize:"9px",fontWeight:"700",
+                    padding:"2px 8px",borderRadius:"999px",marginTop:"6px",
+                    background:p.risk_probability>=0.7?"rgba(239,68,68,0.15)":
+                               p.risk_probability>=0.4?"rgba(251,191,36,0.15)":
+                               "rgba(74,222,128,0.12)",
+                    color:p.risk_probability>=0.7?"#f87171":
+                          p.risk_probability>=0.4?"#fbbf24":"#4ade80",
+                    border:`0.5px solid ${p.risk_probability>=0.7?"rgba(248,113,113,0.4)":
+                            p.risk_probability>=0.4?"rgba(251,191,36,0.4)":
+                            "rgba(74,222,128,0.3)"}`
+                  }}>
+                    {p.risk_probability>=0.7?"High":
+                     p.risk_probability>=0.4?"Moderate":"Low"}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Center body */}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+              <DigitalTwinBody
+                predictions={predictions}
+                animated={true}
+                size="md"
+              />
+              <div style={{
+                marginTop:"8px",fontSize:"10px",
+                color:"rgba(255,255,255,0.35)",
+                textAlign:"center",letterSpacing:".04em"
+              }}>
+                YOUR DIGITAL TWIN
               </div>
-            )}
+            </div>
+
+            {/* Right cards */}
+            <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+              {predictions.filter(p =>
+                ["diabetes","obesity"].includes(p.condition)
+              ).map(p => (
+                <div key={p.condition} style={{
+                  background:"rgba(6,17,31,0.9)",
+                  border:"0.5px solid rgba(255,255,255,0.1)",
+                  borderRadius:"12px", padding:"12px 14px"
+                }}>
+                  <div style={{
+                    fontSize:"10px",color:"rgba(255,255,255,0.4)",
+                    marginBottom:"4px",display:"flex",
+                    justifyContent:"space-between"
+                  }}>
+                    {({diabetes:"Diabetes",obesity:"Obesity"})[p.condition]}
+                    <span>→</span>
+                  </div>
+                  <div style={{
+                    fontSize:"24px",fontWeight:"700",color:"white",lineHeight:1
+                  }}>
+                    {Math.round(p.risk_probability*100)}
+                    <span style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>%</span>
+                  </div>
+                  <div style={{
+                    display:"inline-block",fontSize:"9px",fontWeight:"700",
+                    padding:"2px 8px",borderRadius:"999px",marginTop:"6px",
+                    background:p.risk_probability>=0.7?"rgba(239,68,68,0.15)":
+                               p.risk_probability>=0.4?"rgba(251,191,36,0.15)":
+                               "rgba(74,222,128,0.12)",
+                    color:p.risk_probability>=0.7?"#f87171":
+                          p.risk_probability>=0.4?"#fbbf24":"#4ade80",
+                    border:`0.5px solid ${p.risk_probability>=0.7?"rgba(248,113,113,0.4)":
+                            p.risk_probability>=0.4?"rgba(251,191,36,0.4)":
+                            "rgba(74,222,128,0.3)"}`
+                  }}>
+                    {p.risk_probability>=0.7?"High":
+                     p.risk_probability>=0.4?"Moderate":"Low"}
+                  </div>
+                </div>
+              ))}
+
+              {/* Health score card */}
+              <div style={{
+                background:"rgba(99,179,237,0.07)",
+                border:"0.5px solid rgba(99,179,237,0.25)",
+                borderRadius:"12px",padding:"12px 14px"
+              }}>
+                <div style={{
+                  fontSize:"10px",color:"rgba(255,255,255,0.4)",marginBottom:"4px"
+                }}>
+                  Health Score
+                </div>
+                <div style={{
+                  fontSize:"24px",fontWeight:"700",lineHeight:1,
+                  color:healthScore?.total>=75?"#4ade80":
+                        healthScore?.total>=50?"#fbbf24":"#f87171"
+                }}>
+                  {healthScore?.total ?? healthScore ?? 0}
+                  <span style={{fontSize:"12px",color:"rgba(255,255,255,0.4)"}}>
+                    /100
+                  </span>
+                </div>
+                <div style={{
+                  display:"inline-block",fontSize:"9px",fontWeight:"700",
+                  padding:"2px 8px",borderRadius:"999px",marginTop:"6px",
+                  background:"rgba(99,179,237,0.12)",color:"#63b3ed",
+                  border:"0.5px solid rgba(99,179,237,0.3)"
+                }}>
+                  {(healthScore?.total??0)>=75?"Good":
+                   (healthScore?.total??0)>=50?"Fair":"Poor"}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Insight bar */}
+          <div style={{
+            background:"rgba(99,179,237,0.06)",
+            border:"0.5px solid rgba(99,179,237,0.18)",
+            borderRadius:"12px",padding:"12px 16px",
+            fontSize:"13px",color:"rgba(255,255,255,0.65)",
+            lineHeight:"1.6"
+          }}>
+            <span style={{color:"#63b3ed",fontWeight:"600"}}>
+              🧬 Twin insight:{" "}
+            </span>
+            {(() => {
+              const high = predictions.filter(p=>p.risk_probability>=0.7)
+              if(!high.length) return "All risk levels are manageable. Your twin is in good shape — keep up your current habits."
+              const top = [...high].sort((a,b)=>b.risk_probability-a.risk_probability)[0]
+              const feat = top.top_shap_features?.[0]?.feature||"lifestyle inputs"
+              const labels = {stress:"Stress",hypertension:"Hypertension",
+                heart:"Heart Disease",diabetes:"Diabetes",obesity:"Obesity"}
+              return `High ${labels[top.condition]||top.condition} risk detected. Key driver: "${feat}". Use the Simulate tab to test lifestyle changes in real time.`
+            })()}
+          </div>
+        </div>
+      )}
+
 
             {/* Explainability */}
             {activeTab === "explainability" && (

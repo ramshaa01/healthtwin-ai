@@ -5,6 +5,7 @@ import {
   ResponsiveContainer, Tooltip, Legend
 } from "recharts"
 import Navbar from "../components/Navbar"
+import DigitalTwinBody from "../components/DigitalTwinBody"
 import { healthAPI } from "../api/client"
 
 const SLIDERS = [
@@ -38,8 +39,15 @@ export default function SimulatePage() {
   const [baseline, setBaseline] = useState(null)
   const [vals, setVals] = useState({})
   const [simResult, setSimResult] = useState(null)
+  const [simPredictions, setSimPredictions] = useState([])
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (baseline?.predictions) {
+      setSimPredictions(baseline.predictions)
+    }
+  }, [baseline])
 
   useEffect(() => {
     const stored = sessionStorage.getItem("healthtwin_result")
@@ -58,9 +66,13 @@ export default function SimulatePage() {
     if (!Object.keys(v).length) return
     setLoading(true)
     try {
-      const res = await healthAPI.simulate(v)
+      const inp = sessionStorage.getItem("healthtwin_input")
+      const p = JSON.parse(inp)
+      SLIDERS.forEach(s => p[s.key] = v[s.key])
+      const res = await healthAPI.simulate(p)
       setSimResult(res.data)
-    } catch (e) { console.error(e) }
+      setSimPredictions(res.data.predictions || [])
+    } catch (err) { console.error(err) }
     finally { setLoading(false) }
   }, [])
 
@@ -127,6 +139,36 @@ export default function SimulatePage() {
           </div>
 
           <div className="space-y-4">
+      {/* Live Digital Twin body */}
+      <div style={{
+        background:"linear-gradient(135deg,#06111f,#0d1f35)",
+        borderRadius:"16px",padding:"16px",
+        display:"flex",flexDirection:"column",alignItems:"center",
+        marginBottom:"12px"
+      }}>
+        <div style={{
+          fontSize:"10px",color:"rgba(255,255,255,0.35)",
+          letterSpacing:".06em",textTransform:"uppercase",
+          marginBottom:"8px"
+        }}>
+          {loading ? "⏳ Simulating..." : "Live Twin Response"}
+        </div>
+        <DigitalTwinBody
+          predictions={simPredictions.length ? simPredictions : (baseline?.predictions || [])}
+          animated={true}
+          size="sm"
+        />
+        <div style={{
+          marginTop:"8px",fontSize:"11px",
+          color:"rgba(255,255,255,0.45)",textAlign:"center"
+        }}>
+          {loading
+            ? "Updating organ risk zones..."
+            : simPredictions.length
+              ? "Organs updated based on your simulation"
+              : "Move a slider to see your twin respond"}
+        </div>
+      </div>
             <div className="card">
               <h3 className="font-bold text-gray-800 mb-3">Risk Profile Comparison</h3>
               <ResponsiveContainer width="100%" height={200}>

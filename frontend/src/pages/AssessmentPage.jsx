@@ -84,6 +84,7 @@ export default function AssessmentPage() {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState(DEFAULT_FORM)
   const [loading, setLoading] = useState(false)
+  const [analysing, setAnalysing] = useState(false)
   const [error, setError] = useState("")
   const navigate = useNavigate()
 
@@ -109,6 +110,7 @@ export default function AssessmentPage() {
   const handleSubmit = async () => {
     if (!validateStep()) return
     setLoading(true)
+    setAnalysing(true)
     setError("")
     try {
       const payload = Object.fromEntries(
@@ -118,14 +120,77 @@ export default function AssessmentPage() {
       const res = await healthAPI.predict(payload)
       sessionStorage.setItem("healthtwin_result", JSON.stringify(res.data))
       navigate("/dashboard")
+      setAnalysing(false)
     } catch (e) {
       setError(e.response?.data?.detail ||
                JSON.stringify(e.response?.data) ||
                "Prediction failed. Please check all values and try again.")
+      setAnalysing(false)
     } finally {
       setLoading(false)
     }
   }
+
+  if (analysing) return (
+    <div style={{
+      minHeight:"100vh",
+      background:"linear-gradient(135deg,#06111f,#0d2035)",
+      display:"flex",flexDirection:"column",
+      alignItems:"center",justifyContent:"center",gap:"24px"
+    }}>
+      <div style={{
+        fontSize:"13px",fontWeight:"600",color:"rgba(255,255,255,0.7)",
+        letterSpacing:".08em",textTransform:"uppercase"
+      }}>
+        Building Your Digital Twin
+      </div>
+
+      {/* Animated body placeholder */}
+      <div style={{
+        width:"80px",height:"160px",
+        background:"linear-gradient(180deg,rgba(99,179,237,0.3),rgba(99,179,237,0.05))",
+        borderRadius:"40px 40px 20px 20px",
+        border:"1px solid rgba(99,179,237,0.3)",
+        animation:"twinpulse 1.5s ease-in-out infinite",
+        position:"relative"
+      }}>
+        <div style={{
+          position:"absolute",top:"10px",left:"50%",transform:"translateX(-50%)",
+          width:"32px",height:"32px",
+          background:"rgba(99,179,237,0.4)",
+          borderRadius:"50%",
+          border:"1px solid rgba(99,179,237,0.5)"
+        }}/>
+        <div style={{
+          position:"absolute",top:"48px",left:"50%",transform:"translateX(-50%)",
+          width:"16px",height:"16px",
+          background:"rgba(239,68,68,0.7)",
+          borderRadius:"50%",
+          animation:"heartbeat 0.8s ease-in-out infinite"
+        }}/>
+      </div>
+
+      <div style={{
+        display:"flex",flexDirection:"column",gap:"8px",alignItems:"center"
+      }}>
+        {["Running 5 AI models...","Computing SHAP values...","Mapping organ risks...","Generating insights..."].map((step,i) => (
+          <div key={step} style={{
+            fontSize:"12px",
+            color:`rgba(255,255,255,${0.3+i*0.15})`,
+            animation:`fadeIn 0.5s ease ${i*0.3}s both`
+          }}>
+            ✓ {step}
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes twinpulse{0%,100%{opacity:0.7;transform:scale(1)}50%{opacity:1;transform:scale(1.03)}}
+        @keyframes heartbeat{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.3)}}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+      `}</style>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 md:pb-6">
