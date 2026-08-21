@@ -1,15 +1,15 @@
 export default function RiskCard({ condition, risk_probability,
                                     risk_level, top_shap_features }) {
   const config = {
-    High:     { bg: 'bg-red-50',    border: 'border-red-200',
-                badge: 'badge-high',  bar: 'bg-red-500',
-                icon: '🔴' },
-    Moderate: { bg: 'bg-amber-50',  border: 'border-amber-200',
-                badge: 'badge-moderate', bar: 'bg-amber-500',
-                icon: '🟡' },
-    Low:      { bg: 'bg-emerald-50', border: 'border-emerald-200',
-                badge: 'badge-low',  bar: 'bg-emerald-500',
-                icon: '🟢' },
+     High:     { bg: 'bg-red-50 dark:bg-red-950',
+                 border: 'border-red-200 dark:border-red-800',
+                 badge: 'badge-high', bar: 'bg-red-500', icon: '🔴' },
+     Moderate: { bg: 'bg-amber-50 dark:bg-amber-950',
+                 border: 'border-amber-200 dark:border-amber-800',
+                 badge: 'badge-moderate', bar: 'bg-amber-500', icon: '🟡' },
+     Low:      { bg: 'bg-emerald-50 dark:bg-emerald-950',
+                 border: 'border-emerald-200 dark:border-emerald-800',
+                 badge: 'badge-low', bar: 'bg-emerald-500', icon: '🟢' },
   }
   const c = config[risk_level] || config.Low
   const pct = Math.round(risk_probability * 100)
@@ -25,7 +25,8 @@ export default function RiskCard({ condition, risk_probability,
   return (
     <div className={`rounded-2xl border-2 ${c.bg} ${c.border} p-5
                      flex-1 min-w-[180px] transition-all duration-200
-                     hover:shadow-md animate-slide-up`}>
+                     hover:shadow-md animate-slide-up
+                     dark:border-opacity-50`}>
       <div className="flex justify-between items-start mb-3">
         <h3 className="font-semibold text-gray-800 text-sm leading-tight">
           {labels[condition] || condition}

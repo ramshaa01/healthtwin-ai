@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
 
 const NAV_LINKS = [
   { path: "/dashboard",  label: "Dashboard",  icon: "📊" },
@@ -15,6 +16,7 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const { user, logout } = useAuth()
+  const { dark, toggle } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -29,7 +31,7 @@ export default function Navbar() {
   return (
     <>
       {/* Desktop Navbar */}
-      <nav className="bg-primary-800 shadow-lg sticky top-0 z-50">
+      <nav className="bg-gradient-to-r from-primary-800 to-primary-950 shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -62,6 +64,21 @@ export default function Navbar() {
                   <span className="hidden sm:block text-primary-200 text-sm">
                     {user.full_name || user.username}
                   </span>
+                  <button
+                    onClick={toggle}
+                    style={{
+                      background:"rgba(255,255,255,0.1)",
+                      border:"0.5px solid rgba(255,255,255,0.2)",
+                      color:"white", fontSize:"16px",
+                      width:"32px", height:"32px",
+                      borderRadius:"8px", cursor:"pointer",
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      transition:"all 0.2s"
+                    }}
+                    title={dark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                  >
+                    {dark ? "☀️" : "🌙"}
+                  </button>
                   <button onClick={handleLogout}
                     className="bg-white/10 hover:bg-white/20 text-white
                                text-sm font-medium px-3 py-1.5 rounded-lg

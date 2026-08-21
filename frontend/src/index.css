@@ -53,3 +53,41 @@
            px-3 py-1 rounded-full text-xs font-semibold;
   }
 }
+
+/* Dark mode overrides */
+.dark body {
+  @apply bg-gray-950 text-gray-100;
+}
+
+.dark .card {
+  @apply bg-gray-900 border-gray-800;
+}
+
+.dark .card-hover {
+  @apply bg-gray-900 border-gray-800 hover:border-gray-700;
+}
+
+.dark .input-field {
+  @apply bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500;
+}
+
+.dark .btn-secondary {
+  @apply bg-gray-800 text-primary-500 border-primary-700 hover:bg-gray-700;
+}
+
+.dark .badge-low {
+  @apply bg-emerald-900 text-emerald-300 border-emerald-700;
+}
+
+.dark .badge-moderate {
+  @apply bg-amber-900 text-amber-300 border-amber-700;
+}
+
+.dark .badge-high {
+  @apply bg-red-900 text-red-300 border-red-700;
+}
+
+/* Smooth theme transition */
+*, *::before, *::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.1s ease;
+}

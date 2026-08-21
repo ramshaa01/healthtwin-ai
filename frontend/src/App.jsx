@@ -11,40 +11,43 @@ import HistoryPage from "./pages/HistoryPage"
 import ChatPage from "./pages/ChatPage"
 import TrendsPage from "./pages/TrendsPage"
 import DigitalTwinPage from "./pages/DigitalTwinPage"
+import { ThemeProvider } from "./context/ThemeContext"
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login"   element={<LoginPage />} />
-          <Route path="/signup"  element={<SignupPage />} />
-          <Route path="/dashboard" element={
-            <ProtectedRoute><DashboardPage /></ProtectedRoute>
-          } />
-          <Route path="/assessment" element={
-            <ProtectedRoute><AssessmentPage /></ProtectedRoute>
-          } />
-          <Route path="/simulate" element={
-            <ProtectedRoute><SimulatePage /></ProtectedRoute>
-          } />
-          <Route path="/forecast" element={
-            <ProtectedRoute><ForecastPage /></ProtectedRoute>
-          } />
-          <Route path="/history" element={
-            <ProtectedRoute><HistoryPage /></ProtectedRoute>
-          } />
-          <Route path="/chat" element={
-            <ProtectedRoute><ChatPage /></ProtectedRoute>
-          } />
-          <Route path="/trends" element={
-            <ProtectedRoute><TrendsPage /></ProtectedRoute>
-          } />
-          <Route path="/twin" element={
-            <ProtectedRoute><DigitalTwinPage /></ProtectedRoute>
-          } />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login"   element={<LoginPage />} />
+            <Route path="/signup"  element={<SignupPage />} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute><DashboardPage /></ProtectedRoute>
+            } />
+            <Route path="/assessment" element={
+              <ProtectedRoute><AssessmentPage /></ProtectedRoute>
+            } />
+            <Route path="/simulate" element={
+              <ProtectedRoute><SimulatePage /></ProtectedRoute>
+            } />
+            <Route path="/forecast" element={
+              <ProtectedRoute><ForecastPage /></ProtectedRoute>
+            } />
+            <Route path="/history" element={
+              <ProtectedRoute><HistoryPage /></ProtectedRoute>
+            } />
+            <Route path="/chat" element={
+              <ProtectedRoute><ChatPage /></ProtectedRoute>
+            } />
+            <Route path="/trends" element={
+              <ProtectedRoute><TrendsPage /></ProtectedRoute>
+            } />
+            <Route path="/twin" element={
+              <ProtectedRoute><DigitalTwinPage /></ProtectedRoute>
+            } />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
