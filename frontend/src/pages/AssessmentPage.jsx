@@ -119,7 +119,7 @@ export default function AssessmentPage() {
       sessionStorage.setItem("healthtwin_input", JSON.stringify(payload))
       const res = await healthAPI.predict(payload)
       sessionStorage.setItem("healthtwin_result", JSON.stringify(res.data))
-      navigate("/dashboard")
+      navigate("/results")
       setAnalysing(false)
     } catch (e) {
       setError(e.response?.data?.detail ||

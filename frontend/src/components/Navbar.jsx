@@ -2,21 +2,23 @@ import { useState } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { useTheme } from "../context/ThemeContext"
+import { useLanguage } from "../context/LanguageContext"
 
-const NAV_LINKS = [
-  { path: "/dashboard",  label: "Dashboard",  icon: "📊" },
-  { path: "/assessment", label: "Assessment",  icon: "🩺" },
-  { path: "/simulate",   label: "Simulate",    icon: "🔮" },
-  { path: "/forecast",   label: "Forecast",    icon: "📈" },
-  { path: "/history",    label: "History",     icon: "📋" },
-  { path: "/chat", label: "Chat", icon: "💬" },
-  { path: "/trends", label: "Trends", icon: "📊" },
-  { path: "/twin", label: "Twin", icon: "🫀" },
+const NAV_KEYS = [
+  { path: "/dashboard",  key: "nav_dashboard",  icon: "📊" },
+  { path: "/assessment", key: "nav_assessment",  icon: "🩺" },
+  { path: "/simulate",   key: "nav_simulate",    icon: "🔮" },
+  { path: "/forecast",   key: "nav_forecast",    icon: "📈" },
+  { path: "/history",    key: "nav_history",     icon: "📋" },
+  { path: "/chat",       key: "nav_chat",        icon: "💬" },
+  { path: "/trends",     key: "nav_trends",      icon: "📊" },
+  { path: "/twin",       key: "nav_twin",        icon: "🫀" },
 ]
 
 export default function Navbar() {
   const { user, logout, isDemoMode, exitDemo } = useAuth()
   const { dark, toggle } = useTheme()
+  const { lang, toggle: toggleLang, t } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -51,7 +53,7 @@ export default function Navbar() {
 
             {/* Desktop nav links */}
             <div className="hidden md:flex items-center gap-1">
-              {NAV_LINKS.map(link => (
+              {NAV_KEYS.map(link => (
                 <Link key={link.path} to={link.path}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg
                     text-sm font-medium transition-all duration-150
@@ -60,13 +62,30 @@ export default function Navbar() {
                       : 'text-primary-200 hover:text-white hover:bg-white/10'
                     }`}>
                   <span>{link.icon}</span>
-                  <span>{link.label}</span>
+                  <span>{t(link.key)}</span>
                 </Link>
               ))}
             </div>
 
             {/* User area */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              {/* EN | हिं toggle */}
+              <button
+                onClick={toggleLang}
+                style={{
+                  background:"rgba(255,255,255,0.1)",
+                  border:"0.5px solid rgba(255,255,255,0.2)",
+                  color:"white", fontSize:"11px", fontWeight:"700",
+                  padding:"3px 8px", height:"28px",
+                  borderRadius:"8px", cursor:"pointer",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  transition:"all 0.2s", letterSpacing:".02em"
+                }}
+                title={lang === "en" ? "Switch to Hindi" : "Switch to English"}
+              >
+                {lang === "en" ? "हिं" : "EN"}
+              </button>
+
               {user && (
                 <>
                   <span className="hidden sm:block text-primary-200 text-sm">
@@ -91,7 +110,7 @@ export default function Navbar() {
                     className="bg-white/10 hover:bg-white/20 text-white
                                text-sm font-medium px-3 py-1.5 rounded-lg
                                transition-all duration-150 border border-white/20">
-                    Logout
+                    {t("nav_logout")}
                   </button>
                 </>
               )}
@@ -117,7 +136,7 @@ export default function Navbar() {
         {menuOpen && (
           <div className="md:hidden bg-primary-900 border-t border-primary-700
                           px-4 py-3 space-y-1 animate-fade-in">
-            {NAV_LINKS.map(link => (
+            {NAV_KEYS.map(link => (
               <Link key={link.path} to={link.path}
                 onClick={() => setMenuOpen(false)}
                 className={`flex items-center gap-2 px-3 py-2.5 rounded-lg
@@ -127,7 +146,7 @@ export default function Navbar() {
                     : 'text-primary-200 hover:text-white hover:bg-white/10'
                   }`}>
                 <span>{link.icon}</span>
-                <span>{link.label}</span>
+                <span>{t(link.key)}</span>
               </Link>
             ))}
           </div>
@@ -138,7 +157,7 @@ export default function Navbar() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50
                       bg-white border-t border-gray-200 shadow-2xl">
         <div className="flex justify-around py-2">
-          {NAV_LINKS.filter(l =>
+          {NAV_KEYS.filter(l =>
             ["/dashboard","/assessment","/twin","/chat","/trends"]
             .includes(l.path)
           ).map(link => (
@@ -150,7 +169,7 @@ export default function Navbar() {
                   : 'text-gray-400 hover:text-gray-600'
                 }`}>
               <span className="text-lg">{link.icon}</span>
-              <span className="text-xs font-medium">{link.label}</span>
+              <span className="text-xs font-medium">{t(link.key)}</span>
             </Link>
           ))}
         </div>
