@@ -7,6 +7,7 @@ import {
 import Navbar from "../components/Navbar"
 import DigitalTwinBody from "../components/DigitalTwinBody"
 import { healthAPI } from "../api/client"
+import { useAuth } from "../context/AuthContext"
 
 const SLIDERS = [
   { key: "sleep_hours", label: "Sleep Hours/Night",
@@ -62,6 +63,7 @@ export default function SimulatePage() {
     }
   }, [navigate])
 
+  const { isDemoMode } = useAuth()
   const simulate = useCallback(async (v) => {
     if (!Object.keys(v).length) return
     setLoading(true)
@@ -69,12 +71,27 @@ export default function SimulatePage() {
       const inp = sessionStorage.getItem("healthtwin_input")
       const p = JSON.parse(inp)
       SLIDERS.forEach(s => p[s.key] = v[s.key])
+      
+      if (isDemoMode) {
+        // Mock simulate response by just shifting original values randomly based on slider differences
+        const stored = JSON.parse(sessionStorage.getItem("healthtwin_result"))
+        const mockRes = { ...stored }
+        mockRes.predictions = mockRes.predictions.map(pred => ({
+          ...pred,
+          risk_probability: Math.max(0.1, Math.min(0.95, pred.risk_probability + (Math.random() * 0.1 - 0.05)))
+        }))
+        setSimResult(mockRes)
+        setSimPredictions(mockRes.predictions)
+        setLoading(false)
+        return
+      }
+
       const res = await healthAPI.simulate(p)
       setSimResult(res.data)
       setSimPredictions(res.data.predictions || [])
     } catch (err) { console.error(err) }
-    finally { setLoading(false) }
-  }, [])
+    finally { if (!isDemoMode) setLoading(false) }
+  }, [isDemoMode])
 
   const handleSlider = (key, value) => {
     const updated = { ...vals, [key]: parseFloat(value) }

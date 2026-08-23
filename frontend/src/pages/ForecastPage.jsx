@@ -6,6 +6,7 @@ import {
 } from "recharts"
 import Navbar from "../components/Navbar"
 import { healthAPI } from "../api/client"
+import { useAuth } from "../context/AuthContext"
 
 const CONDITIONS = ["diabetes","hypertension","heart","obesity","stress"]
 const LABELS = { diabetes:"Diabetes", hypertension:"Hypertension",
@@ -28,16 +29,37 @@ export default function ForecastPage() {
     run()
   }, [navigate])
 
+  const { isDemoMode } = useAuth()
+  
   const run = async () => {
     setLoading(true)
     setError("")
+    if (isDemoMode) {
+      setTimeout(() => {
+        // Mock forecast data
+        const stored = JSON.parse(sessionStorage.getItem("healthtwin_result"))
+        const trajs = {}
+        stored.predictions.forEach(p => {
+          const v = p.risk_probability
+          trajs[p.condition] = {
+            best_case: Math.max(0.05, v - 0.2),
+            expected: v,
+            worst_case: Math.min(0.95, v + 0.2)
+          }
+        })
+        setForecast({ trajectories: trajs })
+        setLoading(false)
+      }, 800)
+      return
+    }
+
     try {
       const res = await healthAPI.forecast()
       setForecast(res.data)
     } catch (e) {
       setError("Forecast failed. Please run assessment first.")
     } finally {
-      setLoading(false)
+      if (!isDemoMode) setLoading(false)
     }
   }
 

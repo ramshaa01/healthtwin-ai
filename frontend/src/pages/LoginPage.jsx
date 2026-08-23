@@ -1,13 +1,21 @@
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import { demoInput, demoResult } from "../data/demoProfile"
 
 export default function LoginPage() {
   const [form, setForm] = useState({ username: "", password: "" })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, enterDemo } = useAuth()
   const navigate = useNavigate()
+
+  const handleDemo = () => {
+    enterDemo()
+    sessionStorage.setItem("healthtwin_input", JSON.stringify(demoInput))
+    sessionStorage.setItem("healthtwin_result", JSON.stringify(demoResult))
+    navigate("/twin")
+  }
 
   const handleSubmit = async () => {
     if (!form.username || !form.password) {
@@ -81,22 +89,30 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="btn-primary w-full mt-6">
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10"
-                    stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                </svg>
-                Signing in...
-              </span>
-            ) : "Sign In"}
-          </button>
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="btn-primary flex-1">
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10"
+                      stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Wait...
+                </span>
+              ) : "Sign In"}
+            </button>
+            <button
+              onClick={handleDemo}
+              className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg relative overflow-hidden group">
+              <span className="absolute inset-0 w-full h-full bg-white/20 blur-xl group-hover:scale-150 transition-transform duration-500 rounded-full animate-pulse-slow"></span>
+              <span className="relative flex items-center justify-center gap-2">🎬 Try Demo</span>
+            </button>
+          </div>
 
           <p className="text-center mt-5 text-sm text-gray-500">
             Don't have an account?{" "}

@@ -6,6 +6,7 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isDemoMode, setIsDemoMode] = useState(false)
 
   useEffect(() => {
     const token = sessionStorage.getItem("healthtwin_token")
@@ -37,8 +38,16 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  const enterDemo = () => {
+    setIsDemoMode(true)
+  }
+
+  const exitDemo = () => {
+    setIsDemoMode(false)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, loading, isDemoMode, enterDemo, exitDemo }}>
       {children}
     </AuthContext.Provider>
   )

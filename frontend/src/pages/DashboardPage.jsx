@@ -60,7 +60,7 @@ export default function DashboardPage() {
   const [recommendations, setRecommendations] = useState([])
   const [activeTab, setActiveTab] = useState("overview")
   const [loadingRecs, setLoadingRecs] = useState(false)
-  const { user } = useAuth()
+  const { user, isDemoMode } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -75,13 +75,27 @@ export default function DashboardPage() {
   const fetchRecommendations = async () => {
     setLoadingRecs(true)
     try {
+      if (isDemoMode) {
+        // Mock recommendations for demo mode
+        setTimeout(() => {
+          setRecommendations([
+            "Reduce sodium intake to lower systolic blood pressure.",
+            "Incorporate 30 minutes of aerobic exercise daily.",
+            "Improve sleep hygiene to lower stress and hypertension risk.",
+            "Switch to a Mediterranean diet to control cholesterol."
+          ])
+          setActiveTab("recommendations")
+          setLoadingRecs(false)
+        }, 1000)
+        return
+      }
       const res = await healthAPI.recommendations()
       setRecommendations(res.data.recommendations || [])
       setActiveTab("recommendations")
     } catch (e) {
       console.error("Recommendations failed:", e)
     } finally {
-      setLoadingRecs(false)
+      if (!isDemoMode) setLoadingRecs(false)
     }
   }
 
@@ -136,10 +150,12 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <button onClick={() => navigate("/assessment")}
-              className="btn-primary text-sm py-2 px-4">
-              🩺 {hasResults ? "Retake Assessment" : "Start Assessment"}
-            </button>
+            {!isDemoMode && (
+              <button onClick={() => navigate("/assessment")}
+                className="btn-primary text-sm py-2 px-4">
+                🩺 {hasResults ? "Retake Assessment" : "Start Assessment"}
+              </button>
+            )}
             {hasResults && (
               <>
                 <button onClick={() => navigate("/twin")}
@@ -155,10 +171,12 @@ export default function DashboardPage() {
                   className="btn-secondary text-sm py-2 px-4">
                   🔮 Simulate
                 </button>
-                <button onClick={downloadReport}
-                  className="btn-success text-sm py-2 px-4">
-                  📄 PDF
-                </button>
+                {!isDemoMode && (
+                  <button onClick={downloadReport}
+                    className="btn-success text-sm py-2 px-4">
+                    📄 PDF
+                  </button>
+                )}
               </>
             )}
           </div>

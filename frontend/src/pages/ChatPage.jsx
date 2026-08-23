@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import Navbar from "../components/Navbar"
 import client from "../api/client"
+import { useAuth } from "../context/AuthContext"
 
 const QUICK_QUESTIONS = [
   "What causes diabetes?",
@@ -52,12 +53,26 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  const { isDemoMode } = useAuth()
+
   const send = async (text) => {
     const msg = text || input.trim()
     if (!msg || loading) return
     setInput("")
     setMessages(prev => [...prev, { role: "user", content: msg }])
     setLoading(true)
+
+    if (isDemoMode) {
+      setTimeout(() => {
+        setMessages(prev => [...prev, {
+          role: "assistant",
+          content: "As you're in Demo Mode, this is a simulated response based on the demo profile. Based on your high blood pressure and cholesterol, I'd strongly suggest focusing on diet and physical activity."
+        }])
+        setLoading(false)
+      }, 1000)
+      return
+    }
+
     try {
       const res = await client.post("/api/chat", {
         message: msg,
@@ -73,7 +88,7 @@ export default function ChatPage() {
         content: "Sorry, I could not connect. Please check your connection and try again."
       }])
     } finally {
-      setLoading(false)
+      if (!isDemoMode) setLoading(false)
     }
   }
 

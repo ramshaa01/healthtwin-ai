@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 
 export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user, loading, isDemoMode } = useAuth()
   if (loading) return (
     <div style={{ display: "flex", justifyContent: "center",
                   alignItems: "center", minHeight: "100vh",
@@ -10,6 +10,6 @@ export default function ProtectedRoute({ children }) {
       Loading HealthTwin AI...
     </div>
   )
-  if (!user) return <Navigate to="/login" replace />
+  if (!user && !isDemoMode) return <Navigate to="/login" replace />
   return children
 }

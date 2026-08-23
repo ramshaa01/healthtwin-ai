@@ -15,7 +15,7 @@ const NAV_LINKS = [
 ]
 
 export default function Navbar() {
-  const { user, logout } = useAuth()
+  const { user, logout, isDemoMode, exitDemo } = useAuth()
   const { dark, toggle } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
@@ -30,6 +30,14 @@ export default function Navbar() {
 
   return (
     <>
+      {isDemoMode && (
+        <div className="bg-amber-500 text-amber-950 px-4 py-2 text-sm font-semibold flex justify-center items-center gap-4">
+          <span>🎬 Demo Mode — sample data, not a real assessment</span>
+          <button onClick={() => { exitDemo(); navigate("/login"); }} className="bg-amber-950 text-amber-50 px-3 py-1 rounded-full text-xs hover:bg-amber-900 transition-colors">
+            Exit Demo
+          </button>
+        </div>
+      )}
       {/* Desktop Navbar */}
       <nav className="bg-gradient-to-r from-primary-800 to-primary-950 shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
