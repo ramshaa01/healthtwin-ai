@@ -22,20 +22,17 @@ class TokenResponse(BaseModel):
 
 @router.post("/signup", status_code=201)
 def signup(request: SignupRequest):
-    try:
-        if users_collection.find_one({"username": request.username}):
-            raise HTTPException(
-                status_code=400,
-                detail="Username already exists"
-            )
-        users_collection.insert_one({
-            "username":  request.username,
-            "password":  hash_password(request.password),
-            "full_name": request.full_name
-        })
-        return {"message": f"User '{request.username}' created successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"DB_ERROR: {str(e)}")
+    if users_collection.find_one({"username": request.username}):
+        raise HTTPException(
+            status_code=400,
+            detail="Username already exists"
+        )
+    users_collection.insert_one({
+        "username":  request.username,
+        "password":  hash_password(request.password),
+        "full_name": request.full_name
+    })
+    return {"message": f"User '{request.username}' created successfully"}
 
 @router.post("/login", response_model=TokenResponse)
 def login(request: LoginRequest):
