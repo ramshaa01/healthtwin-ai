@@ -16,7 +16,7 @@ export default function LoginPage() {
     enterDemo()
     sessionStorage.setItem("healthtwin_input", JSON.stringify(demoInput))
     sessionStorage.setItem("healthtwin_result", JSON.stringify(demoResult))
-    navigate("/twin")
+    navigate("/results")
   }
 
   const handleSubmit = async () => {
@@ -179,6 +179,17 @@ export default function LoginPage() {
               <span style={{position:"relative", zIndex:1}}>🎬 {t("try_demo")}</span>
             </button>
           </div>
+
+          <button
+            onClick={() => navigate("/asha")}
+            style={{
+              width:"100%", padding:"12px", borderRadius:"12px",
+              background:"#f3f4f6", border:"1px solid #d1d5db",
+              color:"#4b5563", fontWeight:"600", fontSize:"15px",
+              cursor:"pointer", marginTop:"12px"
+            }}>
+            ASHA मोड
+          </button>
 
           <p className="text-center mt-5 text-sm text-gray-500">
             {t("login_no_account")}{" "}

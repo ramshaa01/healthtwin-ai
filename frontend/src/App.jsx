@@ -12,6 +12,7 @@ import ChatPage from "./pages/ChatPage"
 import TrendsPage from "./pages/TrendsPage"
 import DigitalTwinPage from "./pages/DigitalTwinPage"
 import ResultsPage from "./pages/ResultsPage"
+import AshaMode from "./pages/AshaMode"
 import { ThemeProvider } from "./context/ThemeContext"
 import { LanguageProvider } from "./context/LanguageContext"
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
             <Routes>
               <Route path="/login"   element={<LoginPage />} />
               <Route path="/signup"  element={<SignupPage />} />
+              <Route path="/asha"    element={<AshaMode />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute><DashboardPage /></ProtectedRoute>
               } />

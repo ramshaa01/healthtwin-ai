@@ -97,6 +97,26 @@ export default function ResultsPage() {
     </div>
   )
 
+  const downloadReport = async () => {
+    try {
+      const token = sessionStorage.getItem("healthtwin_token")
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+      const res = await fetch(`${apiUrl}/api/export-pdf`,
+        { headers: { Authorization: "Bearer " + token } }
+      )
+      if (!res.ok) throw new Error("Export failed")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = "healthtwin_report.pdf"
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      alert("PDF export failed. Please run an assessment first.")
+    }
+  }
+
   return (
     <div className="min-h-screen pb-16" style={{background:"linear-gradient(160deg,#0d2035 0%,#06111f 100%)"}}>
       <Navbar />
@@ -105,7 +125,7 @@ export default function ResultsPage() {
       <div style={{
         background:"linear-gradient(180deg,#0d2035,#06111f)",
         padding:"12px 20px", borderBottom:"0.5px solid rgba(255,255,255,0.07)",
-        display:"flex", alignItems:"center", justifyContent:"space-between"
+        display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"10px"
       }}>
         <div style={{display:"flex", alignItems:"center", gap:"8px"}}>
           <div style={{
@@ -117,7 +137,16 @@ export default function ResultsPage() {
             {t("results_twin_live")}
           </span>
         </div>
-        <div style={{display:"flex", gap:"8px"}}>
+        <div style={{display:"flex", gap:"8px", flexWrap:"wrap"}}>
+          {!isDemoMode && (
+            <button onClick={downloadReport} style={{
+              background:"rgba(16,185,129,0.12)", border:"0.5px solid rgba(16,185,129,0.3)",
+              color:"#10b981", fontSize:"11px", padding:"4px 12px",
+              borderRadius:"999px", cursor:"pointer"
+            }}>
+              📄 {t("dash_pdf")}
+            </button>
+          )}
           <button onClick={() => navigate("/twin")} style={{
             background:"rgba(99,179,237,0.12)", border:"0.5px solid rgba(99,179,237,0.3)",
             color:"#63b3ed", fontSize:"11px", padding:"4px 12px",
