@@ -93,7 +93,7 @@ export default function DashboardPage() {
       setRecommendations(res.data.recommendations || [])
       setActiveTab("recommendations")
     } catch (e) {
-      console.error("Recommendations failed:", e)
+      setRecommendations([{ text: "Could not load recommendations. Please check your connection and try again." }])
     } finally {
       if (!isDemoMode) setLoadingRecs(false)
     }

@@ -11,12 +11,13 @@ const CONDITION_LABELS = {
 export default function HistoryPage() {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const navigate = useNavigate()
 
   useEffect(() => {
     healthAPI.history()
       .then(res => setHistory(res.data.history || []))
-      .catch(console.error)
+      .catch(() => setError("Could not load history. Please check your connection and try again."))
       .finally(() => setLoading(false))
   }, [])
 
@@ -62,6 +63,12 @@ export default function HistoryPage() {
           </p>
         </div>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-5 flex items-start gap-2">
+            <span className="text-red-500">⚠️</span>
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
