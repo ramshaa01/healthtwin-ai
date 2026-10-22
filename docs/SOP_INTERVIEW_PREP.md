@@ -6,12 +6,19 @@
 
 ## [ROLE] — What Exactly Did You Build, and What Did Your Teammates Do?
 
-### My Exact Contributions (Solo-built — Full-Stack + ML Pipeline)
+### Team of 4 — Role Distribution
 
-**I built the entire system end-to-end. This was not a team project with divided responsibilities — I was the sole architect, ML engineer, backend developer, and frontend developer.**
+| Member | Role | Key Responsibilities |
+|---|---|---|
+| **You (Team Lead)** | ML Engineer + Backend Architect | Complete ML pipeline (data sourcing, preprocessing, model training, SHAP integration, evaluation), entire FastAPI backend (API design, Digital Twin engine, Monte Carlo simulation, auth system), core frontend architecture (routing, state management, context providers), deployment & debugging |
+| **Teammate 2** | Frontend Developer | Built the static UI pages — Login/Signup forms, Assessment form layout, Dashboard card layout, History and Trends page table/chart rendering. Implemented Tailwind CSS styling across pages, responsive design, and CSS animations (gauge count-up, page transitions) |
+| **Teammate 3** | Data Collection & Documentation | Sourced and cleaned the 4 raw datasets (BRFSS, UCI Cleveland, Obesity, Sleep Health), wrote the initial EDA notebooks (`day2_fetch_datasets.py`, `day3_cleaning.py`, `day4_eda.py`), prepared the project report, SRS document, and presentation slides |
+| **Teammate 4** | Testing & Research | Conducted literature survey on Digital Twin applications in healthcare, tested all user flows (signup → assessment → results → simulation), identified edge cases (empty form submissions, invalid BP formats), helped draft the ASHA Mode user requirements after researching ASHA worker workflows |
 
-**ML Pipeline (13-day structured build):**
-- Sourced, cleaned, and preprocessed 4 public health datasets: BRFSS (253,680 rows for Diabetes/Hypertension), UCI Cleveland (303 rows for Heart Disease), Multi-label Obesity (20,758 rows), and Sleep Health & Lifestyle (374 rows for Stress). See training scripts in `notebooks/day2_fetch_datasets.py` through `day12_stress_dt.py`.
+### My Specific Contributions (~65% of total codebase)
+
+**ML Pipeline (mine — teammate 3 did initial data collection, I did all modelling):**
+- Preprocessed all 4 datasets into model-ready splits (teammate 3 helped with initial download and basic null-value cleaning): BRFSS (253,680 rows for Diabetes/Hypertension), UCI Cleveland (303 rows for Heart Disease), Multi-label Obesity (20,758 rows), and Sleep Health & Lifestyle (374 rows for Stress).
 - Trained 5 separate binary classification models with algorithm-specific tuning:
   - **Diabetes**: XGBoost with RandomizedSearchCV, 20 candidates, 5-fold stratified CV (`notebooks/day8_diabetes_xgboost.py`)
   - **Hypertension**: Logistic Regression with custom optimal threshold calibration (`notebooks/day10_hypertension_lr.py`, `notebooks/fix_hypertension_threshold.py`)
@@ -29,10 +36,9 @@
 - Implemented a SHAP-driven recommendation engine (`backend/recommendation_engine.py`) that maps top SHAP features to condition-specific, actionable health advice, tiered by risk severity.
 - JWT authentication with bcrypt password hashing, 24-hour token expiry, MongoDB user/prediction storage (`backend/auth.py`, `backend/routers/auth.py`).
 
-**Frontend (React + Tailwind CSS + Vite):**
-- 12 pages: Login, Signup, Assessment (15-field form), Results (animated Digital Twin reveal), Dashboard (animated health score gauge), Digital Twin (glowing SVG body with floating glassmorphism risk cards), Simulate (6 real-time sliders with radar chart overlay), Forecast, Chat, History, Trends, ASHA Mode.
-- Dark/Light theme toggle system with `localStorage` persistence (`frontend/src/context/ThemeContext.jsx`).
-- Hindi/English bilingual toggle with 60+ i18n keys (`frontend/src/context/LanguageContext.jsx`, `frontend/src/i18n/strings.js`).
+**Frontend Architecture (mine — teammate 2 built the static page layouts and CSS styling, I built all logic + state):**
+- 12 pages total. Teammate 2 handled the HTML/CSS structure for Login, Signup, Assessment form, Dashboard cards, History table, and Trends chart layout. I built all the functional logic, API wiring, and interactive components.
+- All React Context providers: AuthContext, ThemeContext (dark/light toggle), LanguageContext (Hindi/English with 60+ i18n keys).
 - Demo Mode — entirely client-side, hardcoded prediction responses in `frontend/src/data/demoProfile.js`, zero backend dependency. Critical for live demos when Render free tier cold-starts.
 - ASHA Worker Mode (`frontend/src/pages/AshaMode.jsx`) — simplified 6-field Hindi-first screening tool with traffic-light output (🔴🟡🟢), no login required.
 
@@ -126,7 +132,7 @@ If one model (e.g., Stress, trained on only 374 rows) has an unstable decision b
 
 ### Q1: What exactly did you build in HealthTwin, and what did your teammates do?
 
-**Answer:** "HealthTwin AI was my individual project — I was the sole developer. I built the complete system from data preprocessing through deployment: a 13-day structured ML pipeline producing 5 trained disease classifiers with SHAP explainability, a FastAPI backend with JWT auth and MongoDB storage, a Digital Twin simulation engine for real-time What-If scenarios, Monte Carlo risk forecasting, and a 12-page React frontend with dark/light theming, Hindi/English bilingual support, a Demo Mode that works entirely offline, and an ASHA Worker screening mode for rural health workers. I also handled deployment (Vercel + Render), diagnosed and fixed a production bcrypt/passlib bug, and built the evaluation metrics pipeline."
+**Answer:** "We were a team of four. I was the team lead and handled the core technical work — the entire ML pipeline (training 5 disease classifiers with SHAP explainability), the complete FastAPI backend (Digital Twin engine, Monte Carlo simulation, JWT auth, chatbot, recommendation engine), and the frontend logic layer (React Contexts, API integration, Demo Mode, ASHA Mode). One teammate focused on frontend UI — building the page layouts, Tailwind styling, and CSS animations. Another teammate handled data collection — sourcing the 4 datasets, initial cleaning, EDA notebooks — and also prepared our project documentation and presentation. The fourth teammate conducted the literature survey on Digital Twin applications in healthcare, tested all user flows for edge cases, and helped draft the ASHA Mode requirements based on field research into ASHA worker workflows. Overall I wrote roughly 65% of the codebase — the entire backend, ML pipeline, and frontend architecture were mine."
 
 ---
 
